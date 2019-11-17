@@ -1,0 +1,6 @@
+15:1400:1630:ramtk6726:10:Term Project Meeting:../Data/ScheduleData/2019/01/ramtk6726_20190123.txt:
+17:0915:1030:ramtk6726:00:Hospital:../Data/ScheduleData/2019/09/ramtk6726_20190926.txt:
+17:1130:1300:eun0317:01:Have a lunch with a friend:../Data/ScheduleData/2019/05/eun0317_20190503.txt:
+17:1300:1430:eun0317:00:System Programming HW:../Data/ScheduleData/2019/01/eun0317_20190123.txt:
+17:1400:2230:ramtk6726:01:Sleep:../Data/ScheduleData/2019/01/ramtk6726_20190105.txt:
+18:2300:2330:eun0317:10:Coffee Time with Team Member:../Data/ScheduleData/2019/01/eun0317_20190123.txt:
