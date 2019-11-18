@@ -1,3 +1,5 @@
+// *Start Menu 
+// .Bomi
 #include <stdio.h>
 #include <stdlib.h>
 #include <curses.h>
@@ -65,6 +67,7 @@ void start_Screen()
 	
 }
 
+//Handler for startMenu input
 void start_Handler(int signum)
 {
 	int  input;
@@ -76,7 +79,7 @@ void start_Handler(int signum)
 
 	switch(input)
 	{
-	case 119://--Up [w]
+	case UP:// [w]
 		x_before = x;	//save before x for erase 
 		if(--x == 14)
 		       	x=17;	
@@ -84,7 +87,7 @@ void start_Handler(int signum)
 		mvaddstr(x,y-1,">");
 		refresh();
 		break;
-	case 115://--Down [s]
+	case DOWN:// [s]
 		x_before = x;
 		if(++x == 18)
 			x=15;
@@ -92,7 +95,7 @@ void start_Handler(int signum)
                 mvaddstr(x,y-1,">");
                 refresh();
 		break;
-	case 13://--Enter
+	case ENTER:// [enter]
 		switch(x)
 		{
 		case 15://--> Log in
