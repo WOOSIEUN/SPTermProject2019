@@ -7,9 +7,9 @@
 
 #define TIMEOFFSET 9
 #define List_Xp 10
-#define List_Yp_1 10
-#define List_Yp_2 16
-#define List_Yp_3 22
+#define List_Yp_1 12
+#define List_Yp_2 18
+#define List_Yp_3 24
 
 typedef struct node *nodeptr;
 typedef struct node {
@@ -38,10 +38,14 @@ char user_ID[20];
 char user_Name[20];
 int user_isMaster;
 void smaller_than_ten(int target, char *targetstr);
+void clear_list_detail();
 
 void main() {
-	int i, year, year_and_month, date, today;
-	int listcnt;
+	int i,j, year, year_and_month, date, today;
+    int listend = 0;
+    char ch;
+    nodeptr isHead = NULL;
+    
 
 	strcpy(user_ID, "ramtk6726");
 	strcpy(user_Name, "EUN");
@@ -49,6 +53,7 @@ void main() {
 
 	initscr();
 	clear();
+    //keypad(stdscr, TRUE);
 
 	today = print_today();
 	print_menu();
@@ -57,10 +62,8 @@ void main() {
 
 	//if date is 0, our program determines that the user wants to find a month schedule.
 	//if date is not 0, our program determines that the user wants to find a specific date schedule.
-
+    current = head;
 	while (1) {
-		current = head;
-		listcnt = 0;
 		if (head == NULL) {// This case means file is empty. Print NO SCHEDULE
 			move(List_Yp_1, List_Xp);
 			addstr("\n        NO SCHEDULE        \n");
@@ -68,41 +71,85 @@ void main() {
 		}
 		else {
 			for (i = 0; i < 3; i++) {
-				if (current == NULL) {
-					continue;
-				}
-				if (strcmp(current->permissionBit, "01\0") == 0) { //private file.
-					if (strcmp(current->userID, user_ID) || user_isMaster == 1) { //Check if the program print private file or not.
-						print_list_detail(i + 1, 1, year, year_and_month);
-					}
-					current = current->next;
-				}
-				else { //if file isn't private file.
-					print_list_detail(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
-					current = current->next;
-				}
-			}
+				if (current->next == NULL) {
+                    break;
+				} else if(current == head && i == 0){
+                    print_list_detail(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
+                    continue;
+                }
+                current = current->next;
+                print_list_detail(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
+            }	
 		}
 		refresh();
+        
+        while(1){
+            ch = getchar();
+            if(ch == 'a'){
+                isHead = current;
+                for(j=0;j<i-1;j++){
+                    isHead = isHead->pre;
+                }
+                if(isHead==head){ //ignore prev page call
+                    continue;
+                }
+                for(j=0;j<i+2;j++){
+                    current = current->pre;
+                }
+                clear_list_detail();
+                break;
+            } else if(ch == 'd'){
+                if(current->next==NULL){ //list is end. ignore next page call
+                    continue;
+                }
+                clear_list_detail();
+                break;
+            }else if (ch == '4'){ //if user want to quit this program, return here.
+                endwin();
+                return;
+            }
+        }
+
 		//new while loop is needed here and write code that under this line in while loop.
 		//
 		//search : Receive new search date -> break new while loop -> search use value today yyyymmdd -> search_schedule
 		//add schedule : add -> break new while loop -> Give same value (today) to search_schedule
 		//change choice pointer : Receive key -> If the page has to be changed, break.
 		//up and down : move choice pointer, and mark where the choice pointer is. choice cnt ==1 or 3, limit up or down.
-		//prev page : current=current->prev * 6
-		//next page : just break
-		//if current == NULL   ignore next page call
-		//after current = current->prev * 3, if current == head   ignore prev page call
-		if (getchar() == '3') { //if user want to quit this program, break here.
-			endwin();
-			return;
-		}
 		//search_schedule maybe needed here.
 	}
-	return;
 }
 
+void clear_list_detail(){
+    int xp, yp;
+    
+    xp = List_Xp;
+    yp = List_Yp_1;
+    move(yp,xp);
+    addstr("                                                                                    ");
+    move(yp+1,xp);
+    addstr("                                                                                    ");
+    move(yp+2,xp);
+    addstr("                                                                                    ");
+    xp = List_Xp;
+    yp = List_Yp_2;
+    move(yp,xp);
+    addstr("                                                                                    ");
+    move(yp+1,xp);
+    addstr("                                                                                    ");
+    move(yp+2,xp);
+    addstr("                                                                                    ");
+    xp = List_Xp;
+    yp = List_Yp_3;
+    move(yp,xp);
+    addstr("                                                                                    ");
+    move(yp+1,xp);
+    addstr("                                                                                    ");
+    move(yp+2,xp);
+    addstr("                                                                                    ");
+    
+}
+    
 void print_list_detail(int order, int group, int year, int year_and_month) {
 	//This program can print 3 list. order is used to determine a y-position.
 	char sort[6];
@@ -186,7 +233,10 @@ int print_today() { //Print Today's Date and return today's date. Use header fil
 
 void print_menu() {//print menu. Details of this function need to be modified.
 	addstr("*************************************************\n");
-	addstr("plz add menu here!!\n");
+	addstr("1. Add Schedule.\n");
+    addstr("2. View Schedule Detail.\n");
+    addstr("3. Search Schedule.\n   (Enter YYYYMMDD. Press Enter Key.)  :\n");
+	addstr("4. Quit.\n");
 	addstr("*************************************************\n");
 	refresh();
 }
@@ -209,7 +259,7 @@ void search_schedule(int *year, int *year_and_month, int *date, int target) {
 
 	sprintf(filename, "../Data/ScheduleData/%d/%d_Schedule.txt", *year, *year_and_month); //make file path
 
-																						  //make Linked List
+	//make Linked List
 	head = make_schedulelist(0, filename, date);
 
 	return;
@@ -241,9 +291,11 @@ struct node * make_schedulelist(int mode, char *filename, int *date) {
 		if (f == NULL) {
 			f = fopen(filename, "w");
 			if (f == NULL) {
-				//If the target directory doesn't exists, an algorithm to create dir is required.
-				//make file and write input. return here.
+                perror("open error");
+                return first;
 			}
+			//If the target directory doesn't exists, an algorithm to create dir is required.
+			//make file and write input. return here.
 		}
 	}
 	else { //incorrect mode input error.
@@ -260,14 +312,19 @@ struct node * make_schedulelist(int mode, char *filename, int *date) {
 
 		if (*date != 0 && t_date != *date) {
 			continue;
-		}
+		} else if (strcmp(t_permission, "01") == 0) { //private file.
+            //Check permission that allows the program print private file or not.
+            if (strcmp(t_ID, user_ID) != 0 ||  user_isMaster != 0) { 
+                continue;
+            }
+        }
 
 		//make linked list
 		newnode = allocate_node();
 		initialize_node(newnode, t_date, t_start, t_end, t_ID, t_permission, t_sname, t_filepath);
 		newnode->next = NULL;
-
-		if (first == NULL) {
+        
+        if (first == NULL) {
 			first = newnode;
 			current = first;
 		}
