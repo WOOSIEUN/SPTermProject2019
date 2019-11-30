@@ -9,6 +9,7 @@
 #include <string.h>
 
 #define ESC 0x1b
+#define DEL 0x7f
 
 /* Detailed File Structure */
 typedef struct Schedule {
@@ -33,7 +34,6 @@ typedef struct node {
 	nodeptr pre;
 	nodeptr next;
 } node;
-
 
 #define ISEMPTY 0
 #define ISFULL 1
@@ -237,7 +237,11 @@ Schedule write_content(Schedule schedule_info)
 
 	char c;
 	int i = 0;
-	int line = 7;
+	int line = 8;
+
+	move(line, 0);
+	addstr("=>");
+	refresh();
 
 	while ((c = getchar()) != ESC) {
 		if (c == '\r' || i >= 50) {
@@ -245,6 +249,12 @@ Schedule write_content(Schedule schedule_info)
 			move(line, 0);
 			refresh();
 			i = 0;
+		}
+		else if (c == DEL) {
+			putchar(c);
+			content_i--;
+			content[content_i] = ' ';
+			i--;
 		}
 		else {
 			putchar(c);
