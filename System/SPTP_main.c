@@ -3,14 +3,14 @@
 #include <curses.h>
 #include <time.h>
 #include <string.h>
-#include <pthread.h>
 #include <sys/time.h>
 #include <unistd.h>
+
 #define TIMEOFFSET 9
 #define List_Xp 10
-#define List_Yp_1 12
-#define List_Yp_2 18
-#define List_Yp_3 24
+#define List_Yp_1 15
+#define List_Yp_2 21
+#define List_Yp_3 27
 
 typedef struct node *nodeptr;
 typedef struct node {
@@ -28,10 +28,7 @@ nodeptr head;
 nodeptr current;
 nodeptr choice;
 
-//pthread_mutex_t curser_lock = PTHREAD_MUTEX_INITIALIZER;
-
 int return_today();
-//void *print_today(void*);
 void print_menu();
 void search_schedule(int *year, int *year_and_month, int *date, int target);
 struct node * make_schedulelist(int mode, char *filename, int *date);
@@ -46,11 +43,10 @@ void clear_list_detail();
 void clear_today();
 
 void main() {
-	int i, j, year, year_and_month, date, today;
-	int listend = 0;
+	int i, j, year, year_and_month, date, today, choice;
 	char ch;
 	nodeptr isHead = NULL, choiceptr = NULL;
-//	pthread_t time_thread;
+	//	pthread_t time_thread;
 
 	strcpy(user_ID, "ramtk6726");
 	strcpy(user_Name, "EUN");
@@ -60,31 +56,27 @@ void main() {
 	clear();
 
 	today = return_today();
-
-//    pthread_create(&time_thread, NULL, print_today, NULL);
-
-//    pthread_mutex_lock(&curser_lock);
-    print_menu();
-//    pthread_mutex_unlock(&curser_lock);
+	print_menu();
 
 	search_schedule(&year, &year_and_month, &date, today);
 
-	//if date is 0, our program determines that the user wants to find a month schedule.
-	//if date is not 0, our program determines that the user wants to find a specific date schedule.
 	current = head;
 	while (1) {
-		if (head == NULL) {// This case means file is empty. Print NO SCHEDULE
+		if (head == NULL) {// This case means linked list is empty. Print NO SCHEDULE
 			move(List_Yp_1, List_Xp);
 			addstr("\n        NO SCHEDULE        \n");
 			return;
 		}
 		else {
 			for (i = 0; i < 3; i++) {
-				if (current->next == NULL) {
+				if (current != head && current->next == NULL) {
 					break;
 				}
 				else if (current == head && i == 0) {
 					print_list_detail(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
+					if (current->next == NULL) {
+						break;
+					}
 					continue;
 				}
 				current = current->next;
@@ -95,8 +87,11 @@ void main() {
 
 		while (1) {
 			ch = getchar();
-			if (ch == 'a') {
+			if (ch == 'a') { //prev page
 				isHead = current;
+				if (head == NULL) { //if linked list is empty, ignore next page call
+					continue;
+				}
 				for (j = 0;j < i - 1;j++) {
 					isHead = isHead->pre;
 				}
@@ -109,38 +104,62 @@ void main() {
 				clear_list_detail();
 				break;
 			}
-			else if (ch == 'd') {
-				if (current->next == NULL) { //list is end. ignore next page call
+			else if (ch == 'd') { //next page
+				if (head == NULL || current->next == NULL) { //list is end. ignore next page call
 					continue;
 				}
 				clear_list_detail();
 				break;
 			}
+			else if (ch == '1') { //if user wants to add schedule.
+				//write here. add schedule.
+					//make total linked list to add file.
+				clear();
+				return_today();
+				print_menu();
+				search_schedule(&year, &year_and_month, &date, today);
+				current = head;
+				break;
+			}
+			else if (ch == '2') { //if user wants to view schedule detail.
+				move(8, 50);
+				echo();
+				scanw("%d", &choice);
+				noecho();
+				move(8, 50);
+				addstr("    ");
+				choiceptr = current;
+				for (j = i; j > choice; j--) {//calculate file path
+					choiceptr = choiceptr->pre;
+				}
+				//write here. view detail schedule. open file.
+					//if you want to delete file, make total linked list and delete node. you should delete orginal schedule file too.
+				clear();
+				return_today();
+				print_menu();
+				search_schedule(&year, &year_and_month, &date, today);
+				current = head;
+				break;
+			}
 			else if (ch == '3') { //if user wants to search schedule
-                move(9,42);
-                echo();
-                scanw("%d", &today);
-                noecho();
-                move(9,42);
-                addstr("         ");
-	            search_schedule(&year, &year_and_month, &date, today);
-                current=head;
-                break;
+				move(10, 42);
+				echo();
+				scanw("%d", &today);
+				noecho();
+				move(10, 42);
+				addstr("         ");
+				clear();
+				return_today();
+				print_menu();
+				search_schedule(&year, &year_and_month, &date, today);
+				current = head;
+				break;
 			}
 			else if (ch == '4') { //if user wants to quit this program, return here.
-//                pthread_cancel(time_thread);
-//                pthread_join(time_thread, NULL);
 				endwin();
 				return;
 			}
 		}
-        
-		//new while loop is needed here and write code that under this line in while loop.
-		//
-		//search : Receive new search date -> break new while loop -> search use value today yyyymmdd -> search_schedule
-		//add schedule : add -> break new while loop -> Give same value (today) to search_schedule
-		//up and down : move choice pointer, and mark where the choice pointer is. choice cnt ==1 or 3, limit up or down.
-		//search_schedule maybe needed here.
 	}
 }
 
@@ -245,49 +264,28 @@ int return_today() { //Print Today's Date and return today's date. Use header fi
 	today = (t->tm_year + 1900) * 100;
 	today = (today + (t->tm_mon + 1)) * 100;
 	today = (today + t->tm_mday);
+	move(1, 1);
+	addstr("*********************************************************\n");
+	addstr("                          Today                          \n");
+	printw("                         %d.%d.%d                        \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
+	addstr("*********************************************************\n");
 
 	return today;
 }
-/*
-void *print_today(void *im) { //Print Today's Date and return today's date. Use header file time.h.
-	struct tm *t;
-	time_t timer;
 
-	while(1){
-		clear_today();
-
-		//change time to Korea's time
-		timer = time(NULL);
-		timer += TIMEOFFSET * 3600;
-
-		t = localtime(&timer);
-        pthread_mutex_lock(&curser_lock);
-		clear_today();
-        move(1,1);
-		addstr("*************************************************\n");
-		addstr("                      Today                      \n");
-		printw("               %d.%d.%d  %d:%d:%d                   \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-		addstr("*************************************************\n");
-		refresh();
-        pthread_mutex_unlock(&curser_lock);
-        sleep(1);
-	}
-	return NULL;
-}
-*/
-void clear_today(){
-	move(1,1);
-	addstr("                                                 \n");
-	addstr("                                                 \n");
-	addstr("                                                 \n");
-	addstr("                                                 \n");
+void clear_today() {
+	move(1, 1);
+	addstr("                                                         \n");
+	addstr("                                                         \n");
+	addstr("                                                         \n");
+	addstr("                                                         \n");
 }
 
 void print_menu() {//print menu. Details of this function need to be modified.
 	move(5, 1);
 	addstr("*************************************************\n");
 	addstr("1. Add Schedule.\n");
-	addstr("2. View Schedule Detail.\n");
+	addstr("2. View Schedule Detail. \n   (Enter Schedule Number. Press Enter Key.)  :\n");
 	addstr("3. Search Schedule.\n   (Enter YYYYMMDD. Press Enter Key.)  :\n");
 	addstr("4. Quit.\n");
 	addstr("*************************************************\n");
@@ -330,28 +328,9 @@ struct node * make_schedulelist(int mode, char *filename, int *date) {
 	char ct_date[3], ct_start[5], ct_end[5];
 	int t_date, t_start, t_end;
 
-	if (mode == 0) { //search mode. If Schedule file doesn't exist, print NO SCHEDULE.
-		f = fopen(filename, "r");
-		if (f == NULL) {
-			move(List_Yp_1, List_Xp);
-			addstr("\n        NO SCHEDULE        \n");
-			return first;
-		}
-	}
-	else if (mode == 1) { //add mode
-						  //code that check and mkdir should be added here.
-		f = fopen(filename, "r");
-		if (f == NULL) {
-			f = fopen(filename, "w");
-			if (f == NULL) {
-				perror("open error");
-				return first;
-			}
-			//If the target directory doesn't exists, an algorithm to create dir is required.
-			//make file and write input. return here.
-		}
-	}
-	else { //incorrect mode input error.
+	f = fopen(filename, "r");
+	if (f == NULL) {
+		perror("open error");
 		return first;
 	}
 
@@ -363,32 +342,33 @@ struct node * make_schedulelist(int mode, char *filename, int *date) {
 		t_start = atoi(ct_start);
 		t_end = atoi(ct_end);
 
-		if (*date != 0 && t_date != *date) {
-			continue;
-		}
-		else if (strcmp(t_permission, "01") == 0) { //private file.
-		 //Check permission that allows the program print private file or not.
-			if (strcmp(t_ID, user_ID) != 0 || user_isMaster != 0) {
+		if (mode == 0) { //make linked list for print purpose.
+			//if date is 0, our program determines that the user wants to find a month schedule.
+			//if date is not 0, our program determines that the user wants to find a specific date schedule.
+			if (*date != 0 && t_date != *date) {
 				continue;
 			}
+			else if (strcmp(t_permission, "01") == 0) { //private file.
+			 //Check permission that allows the program print private file or not.
+				if (strcmp(t_ID, user_ID) != 0 || user_isMaster != 0) {
+					continue;
+				}
+			}
 		}
+		// If mode is 1, program make total linked list for add or delete schedule.
 
 		//make linked list
 		newnode = allocate_node();
 		initialize_node(newnode, t_date, t_start, t_end, t_ID, t_permission, t_sname, t_filepath);
 		newnode->next = NULL;
+		newnode->pre = NULL;
 
 		if (first == NULL) {
 			first = newnode;
 			current = first;
 		}
 		else {
-			if (prev == NULL) {
-				prev = first;
-			}
-			else {
-				prev = current;
-			}
+			prev = current;
 			current->next = newnode;
 			current = current->next;
 			current->pre = prev;
