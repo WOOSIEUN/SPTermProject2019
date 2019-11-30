@@ -10,6 +10,7 @@
 
 #define ESC 0x1b
 #define DEL 0x7f
+#define ENTER 0x0d
 
 /* Detailed File Structure */
 typedef struct Schedule {
@@ -21,7 +22,7 @@ typedef struct Schedule {
 	char content[2000];
 }Schedule;
 
-	/* Brief File Structure */
+/* Brief File Structure */
 typedef struct node *nodeptr;
 typedef struct node {
 	int date;
@@ -159,7 +160,7 @@ nodeptr save_brief_file(Schedule schedule_info, char *userID, int year, int mon,
 	brief_schedule->start_time = schedule_info.start_time;
 	brief_schedule->end_time = schedule_info.end_time;
 	strcpy(brief_schedule->userID, userID);
-	strcpy(brief_schedule->permissionBit,schedule_info.permissionBit);
+	strcpy(brief_schedule->permissionBit, schedule_info.permissionBit);
 	strcpy(brief_schedule->scheduleName, schedule_info.scheduleName);
 	strcpy(brief_schedule->filepath, detail_file_path);
 	brief_schedule->next = NULL;
@@ -244,13 +245,26 @@ Schedule write_content(Schedule schedule_info)
 	refresh();
 
 	while ((c = getchar()) != ESC) {
-		if (c == '\r' || i >= 50) {
-			line += 1;
-			move(line, 0);
+		/*if (i >= 50) {
+			
+			move(LINES - 1, COLS - 1);
+			addstr(" ");
+			line = line + 1;
+			move(line, 2);
+			refresh();
+			i = 0;
+		}
+		else */
+		if (c == ENTER) {
+			/* new line */
+			move(0,0);
+			line = line + 1;
+			move(line, 2);
 			refresh();
 			i = 0;
 		}
 		else if (c == DEL) {
+			/* delete char */
 			putchar(c);
 			content_i--;
 			content[content_i] = ' ';
@@ -319,6 +333,9 @@ void screen_fix_info()
 {
 	//It is on the writing screen.
 	clear();
+	move(0, 0);
+	addstr("w: write 	r: read\n");
+	
 	move(1, 0);
 	addstr("*************************************************\n");
 	addstr("   Date       :\n"); //2,0
