@@ -15,11 +15,11 @@
 
 //----------DEFINITIONS
 #define USER_MAX 100
-#define MCODE 486	//master code 
+#define MCODE 486   //master code 
 #define QUIT_SIGN "quit"
-#define UP 119		//[w] = up
-#define DOWN 115	//[s] = down
-#define ENTER 13	//[enter] = enter
+#define UP 119      //[w] = up
+#define DOWN 115   //[s] = down
+#define ENTER 13   //[enter] = enter
 
 #define TIMEOFFSET 9
 #define List_Xp 10
@@ -49,8 +49,8 @@ int signin_return = 0;
 int choice = 0;
 //2. Login
 user userData[USER_MAX]; //structure array for userData
-int userData_Size;	//size of userData array
-int thisUser_Index;	//index of this user in structure array
+int userData_Size;   //size of userData array
+int thisUser_Index;   //index of this user in structure array
 
 
 /* Brief File Structure */
@@ -69,6 +69,10 @@ typedef struct node {
 nodeptr totalhead;
 nodeptr head;
 nodeptr current;
+char user_ID[20];
+char user_Name[20];
+int user_isMaster;
+
 
 /* Detailed File Structure */
 typedef struct Schedule {
@@ -115,16 +119,15 @@ struct node * make_schedulelist(int mode, char *filename, int *date);
 struct node *allocate_node();
 void initialize_node(nodeptr current, int date, int start, int end, char *ID, char *permission, char *sname, char *filepath);
 void print_list_detail(int order, int group, int year, int year_and_month);
-char user_ID[20];
-char user_Name[20];
-int user_isMaster;
 void smaller_than_ten(int target, char *targetstr);
 void clear_list_detail();
+void del_file(char *filepath);
+void add_file(node *insert);
+void save_brief_file(char *tempfilename);
 
 //add file or print schedule details.
 void insert_schedule_file(Schedule schedule_info);
 void save_detail_file(Schedule schedule_info, char *userID, int year, int mon, int day);
-nodeptr save_brief_file(Schedule schedule_info, char *userID, int year, int mon, int day, char *detail_file_path);
 Schedule write_content(Schedule schedule_info);
 Schedule write_scheduleName(Schedule schedule_info);
 Schedule write_permissionBit(Schedule schedule_info);
@@ -138,9 +141,10 @@ void main() {
 	int i, j, year, year_and_month, date, today, choice;
 	char ch;
 	nodeptr isHead = NULL, choiceptr = NULL;
+	char tempfilename[100];
 
-	set_SIGIO();	//1. set sigio signal
-	get_userData();	//2. make user structure array from userData.txt
+	set_SIGIO();   //1. set sigio signal
+	get_userData();   //2. make user structure array from userData.txt
 
 	start_Screen(); //3. start screen 
 					//-> in this function, login & signin are excecuted.
@@ -148,10 +152,10 @@ void main() {
 					//but should do clear();
 
 
-	//start main screen
-	strcpy(user_ID, "ramtk6726");
-	strcpy(user_Name, "EUN");
-	user_isMaster = 0;
+					//start main screen
+	strcpy(user_ID, userData[thisUser_Index].ID);
+	strcpy(user_Name, userData[thisUser_Index].Name);
+	user_isMaster = userData[thisUser_Index].isMaster;
 
 	initscr();
 	clear();
@@ -239,8 +243,13 @@ void main() {
 				for (j = i; j > choice; j--) {//calculate file path
 					choiceptr = choiceptr->pre;
 				}
+				//make total linked list to delete files.
+				sprintf(tempfilename, "../Data/ScheduleData/%d/%d_Schedule.txt", year, year_and_month); //make file path
+				totalhead = make_schedulelist(1, tempfilename, 0);
 				//view detail schedule. open file.
 				read_file(choiceptr->filepath);
+				//save total linked list
+				save_brief_file(tempfilename);
 				//reset the settings of main screen.
 				clear();
 				return_today();
@@ -272,7 +281,7 @@ void main() {
 	}
 }
 
-//	< set sigio signal >
+//   < set sigio signal >
 void set_SIGIO()
 {
 	int fd_flags;
@@ -282,10 +291,10 @@ void set_SIGIO()
 	fcntl(0, F_SETFL, (fd_flags | O_ASYNC));
 }
 
-//	< print start menu >
+//   < print start menu >
 void start_Screen()
 {
-	noecho();	//set noecho mode
+	noecho();   //set noecho mode
 
 				//print main screen
 	initscr();
@@ -308,17 +317,17 @@ void start_Screen()
 
 		if (choice)
 		{
-			mvaddstr(15, 23, "     LOG IN     ");	// choice (0)  default -> login 
+			mvaddstr(15, 23, "     LOG IN     ");   // choice (0)  default -> login 
 			standout();
-			mvaddstr(16, 23, "     SIGN IN    ");	// choice (1)
+			mvaddstr(16, 23, "     SIGN IN    ");   // choice (1)
 			standend();
 		}
 		else
 		{
 			standout();
-			mvaddstr(15, 23, "     LOG IN     ");	// choice (0)  
+			mvaddstr(15, 23, "     LOG IN     ");   // choice (0)  
 			standend();
-			mvaddstr(16, 23, "     SIGN IN    ");	// choice (1)
+			mvaddstr(16, 23, "     SIGN IN    ");   // choice (1)
 		}
 
 		refresh();
@@ -326,7 +335,7 @@ void start_Screen()
 	}
 }
 
-/*	< Handler for startMenu input >
+/*   < Handler for startMenu input >
 if UP ,DOWN : change state
 if ENTER : execute function
 */
@@ -334,7 +343,7 @@ void start_Handler(int signum)
 {
 	int  input;
 
-	input = getchar();	//get input 
+	input = getchar();   //get input 
 
 	switch (input)
 	{
@@ -353,7 +362,7 @@ void start_Handler(int signum)
 }
 
 
-/*	< make userStucture >
+/*   < make userStucture >
 read userData.txt and make userData array
 */
 void get_userData()
@@ -374,7 +383,7 @@ void get_userData()
 	fclose(uData);
 }
 
-/*	< Login >
+/*   < Login >
 if return 1 : back to start menu
 if return 0 : go next step
 */
@@ -461,7 +470,7 @@ int  log_In()
 
 }
 
-/*	< find index of inputID >
+/*   < find index of inputID >
 if id is exist : return index
 if id is not exit in array : return -1
 */
@@ -474,15 +483,15 @@ int find_LoginUser(char* id)
 	return -1;
 }
 
-/*	< Sign in >
+/*   < Sign in >
 if return 1 : back to start menu
 if return 0 : go next step
 */
 int sign_In(void)
 {
 	FILE* userData_file = fopen("../Data/SystemData/userData.txt", "a");
-	char fullStatus[70];	//ID PW Name isMaster
-	char buffer[100];	//buffer to get user input
+	char fullStatus[70];   //ID PW Name isMaster
+	char buffer[100];   //buffer to get user input
 
 	user newUser;
 	int index = 12; //input start position
@@ -593,11 +602,11 @@ int sign_In(void)
 
 	fclose(userData_file);
 
-	return log_In();	//now return login return value
+	return log_In();   //now return login return value
 
 }
 
-/*	< check user's input in signin function >
+/*   < check user's input in signin function >
 if quit : exit
 if length or duplication error : try again until it is correct answrt
 */
@@ -629,7 +638,7 @@ int signIn_Check(int minLen, int maxLen, int index, char* buffer, char* label)
 	}
 }
 
-/*	< check input's duplication >
+/*   < check input's duplication >
 return 1 : its already exist
 return 0 : its new input
 */
@@ -694,7 +703,7 @@ void clear_list_detail() {
 void print_list_detail(int order, int group, int year, int year_and_month) {
 	//This program can print 3 list. order is used to determine a y-position.
 	char sort[6];
-	int xp, yp;
+	int xp, yp, i;
 	int nstart_time, nstart_min, nend_time, nend_min;
 	char start_time[3], start_min[3], end_time[3], end_min[3];
 
@@ -731,8 +740,18 @@ void print_list_detail(int order, int group, int year, int year_and_month) {
 	smaller_than_ten(nend_time, end_time);
 	smaller_than_ten(nend_min, end_min);
 
-	move(yp, xp);
-	printw("[%s]  written by %s\n", sort, current->userID);
+	if (strcmp(userData[thisUser_Index].ID, current->userID) != 0) { //search name
+		for (i = 0; i < userData_Size; i++) {
+			if (strcmp(userData[i].ID, current->userID) == 0) {
+				move(yp, xp);
+				printw("[%s]  written by %s\n", sort, userData[i].Name);
+			}
+		}
+	}
+	else { //login user == write user
+		move(yp, xp);
+		printw("[%s]  written by %s\n", sort, userData[thisUser_Index].Name);
+	}
 	move(yp + 1, xp);
 	printw("%d.%d.%d  %s:%s ~ %s:%s\n", year, year_and_month - (year * 100), current->date, start_time, start_min, end_time, end_min);
 	move(yp + 2, xp);
@@ -840,7 +859,7 @@ struct node * make_schedulelist(int mode, char *filename, int *date) {
 			}
 			else if (strcmp(t_permission, "01") == 0) { //private file.
 														//Check permission that allows the program print private file or not.
-				if (strcmp(t_ID, user_ID) != 0 || user_isMaster != 0) {
+				if (strcmp(t_ID, user_ID) != 0 && user_isMaster != 1) {
 					continue;
 				}
 			}
@@ -894,7 +913,7 @@ void screen_fix_info()
 	//It is on the writing screen.
 	clear();
 	move(0, 0);
-	addstr("w: write 	r: read\n");
+	addstr("w: write    r: read\n");
 
 	move(1, 0);
 	addstr("*************************************************\n");
@@ -1018,7 +1037,12 @@ Schedule write_content(Schedule schedule_info)
 //=============================================SAVE_DETAIL_FILE================================================================
 
 void save_detail_file(Schedule schedule_info, char *userID, int year, int mon, int day) {
+	FILE *brief_file;
+	int schedule_year, schedule_year_and_month, date;
+	nodeptr newnode;
+
 	char detail_file_path[100];
+	char brief_file_path[100];
 	char mon_c[3];
 	smaller_than_ten(mon, mon_c);
 	char day_c[3];
@@ -1041,9 +1065,20 @@ void save_detail_file(Schedule schedule_info, char *userID, int year, int mon, i
 
 	fclose(detail_file);
 
-	//save_brief_file(schedule_info, userID, year, mon, day, detail_file_path);
-
-
+	//save brief list file
+	date = schedule_info.date % 100;
+	newnode = allocate_node();
+	initialize_node(newnode, date, schedule_info.start_time, schedule_info.end_time, userID, schedule_info.permissionBit, schedule_info.scheduleName, detail_file_path);
+	
+	schedule_year_and_month = schedule_info.date / 100;
+	schedule_year = schedule_year_and_month / 100;
+	
+	sprintf(brief_file_path, "../Data/ScheduleData/%d/%d_Schedule.txt", schedule_year, schedule_year_and_month);
+	
+	totalhead = make_schedulelist(1, brief_file_path, 0);
+	add_file(newnode);
+	save_brief_file(brief_file_path);
+	return;
 }
 
 //=============================================READ_DETAIL_FILE================================================================
@@ -1093,11 +1128,15 @@ void read_file(char *filepath) {
 	refresh();
 
 
-	//if you want to delete file, make total linked list and delete node. you should delete orginal schedule file too.
+	//if you want to delete file, delete node and  orginal schedule file.
 	//This code will be modified by WOOSIEUN.
 	while (1) {
 		ch = getchar();
 		if (ch == 'q') { //exit
+			return;
+		}
+		else if (ch == 'd') {
+			del_file(filepath);
 			return;
 		}
 	}
@@ -1107,8 +1146,7 @@ void read_file(char *filepath) {
 void insert_schedule_file(Schedule schedule_info) {
 	/* Get user ID */
 	char userID[20];
-	//id = get_userID();
-	strcpy(userID, "ramtk6726");
+	strcpy(userID, userData[thisUser_Index].ID);
 
 	/* Get current time */
 	struct tm *t;
@@ -1120,10 +1158,94 @@ void insert_schedule_file(Schedule schedule_info) {
 	mon = t->tm_mon + 1;
 	day = t->tm_mday;
 
+
 	/* Date written by the user */
 	int s_date;
 	int s_year, s_mon, s_day;
 
 	save_detail_file(schedule_info, userID, year, mon, day);
 
+}
+
+
+
+
+
+//delete file from brief list and data system.
+void del_file(char *filepath) {
+	nodeptr cur = NULL, prev = NULL;
+
+	//doubly linked list deletion
+	cur = totalhead;
+	while (cur != NULL) {
+		if (strcmp(cur->filepath, filepath) == 0) {
+			if (cur == totalhead) {
+				totalhead = cur->next;
+				totalhead->pre = NULL;
+			}
+			else {
+				prev->next = cur->next;
+				cur->next->pre = prev;
+			}
+			free(cur);
+			break;
+		}
+		prev = cur;
+		cur = cur->next;
+	}
+	remove(filepath);
+	return;
+}
+
+//add file to brief list
+void add_file(node *insert) {
+	nodeptr cur = NULL, prev = NULL;
+
+	//doubly linked list insertion
+	cur = totalhead;
+	while (cur != NULL) {
+		if (cur->date >= insert->date) {
+			if (cur->date == insert->date) {
+				while (cur->start_time < insert->start_time) {
+					prev = cur;
+					cur = cur->next;
+				}
+			}
+			if (cur == totalhead) {
+				insert->next = cur;
+				cur->pre = insert;
+				totalhead = insert;
+			}
+			else {
+				insert->next = cur;
+				cur->pre = insert;
+				prev->next = insert;
+				insert->pre = prev;
+			}
+			return;
+		}
+		prev = cur;
+		cur = cur->next;
+	}
+	prev->next = insert;
+	insert->pre = prev;
+	return;
+}
+
+void save_brief_file(char *tempfilename) {
+	FILE * f = NULL;
+	nodeptr cur = NULL;
+
+	f = fopen(tempfilename, "w");
+	if (f == NULL) {
+		perror("open error");
+	}
+
+	cur = totalhead;
+	while (cur != NULL) {
+		fprintf(f, "%d:%d:%d:%s:%s:%s:%s:\n", cur->date, cur->start_time, cur->end_time, cur->userID, cur->permissionBit, cur->scheduleName, cur->filepath);
+		cur = cur->next;
+	}
+	fclose(f);
+	return;
 }
