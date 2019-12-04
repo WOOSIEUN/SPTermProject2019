@@ -187,6 +187,9 @@ void main() {
 				current = current->next;
 				print_list_detail(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
 			}
+			if (i != 1) {
+				i--;
+			}
 		}
 		refresh();
 
@@ -197,15 +200,24 @@ void main() {
 				if (head == NULL) { //if linked list is empty, ignore next page call
 					continue;
 				}
-				for (j = 0; j < i - 1; j++) {
+				for (j = 0; j < i;j++) {
 					isHead = isHead->pre;
 				}
 				if (isHead == head) { //ignore prev page call
 					continue;
 				}
-				for (j = 0; j < i + 2; j++) {
-					current = current->pre;
+				for (j = 0; j < 3;j++) {
+					isHead = isHead->pre;
 				}
+				if (isHead == head) {
+					current = head;
+				}
+				else {
+					for (j = 0; j < i + 3; j++) {
+						current = current->pre;
+					}
+				}
+				
 				clear_list_detail();
 				break;
 			}
@@ -792,12 +804,12 @@ int return_today() { //Print Today's Date and return today's date. Use header fi
 
 void print_menu() {//print menu. Details of this function need to be modified.
 	move(5, 1);
-	addstr("*************************************************\n");
+	addstr("*********************************************************\n");
 	addstr("1. Add Schedule.\n");
 	addstr("2. View Schedule Detail. \n   (Enter Schedule Number. Press Enter Key.)  :\n");
 	addstr("3. Search Schedule.\n   (Enter YYYYMMDD. Press Enter Key.)  :\n");
 	addstr("4. Quit.\n");
-	addstr("*************************************************\n");
+	addstr("*********************************************************\n");
 	refresh();
 }
 
