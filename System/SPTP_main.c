@@ -127,7 +127,7 @@ void save_brief_file(char *tempfilename);
 
 //add file or print schedule details.
 void insert_schedule_file(Schedule schedule_info);
-void save_detail_file(Schedule schedule_info, char *userID, int year, int mon, int day);
+void save_detail_file(Schedule schedule_info, char *userID, int year, int mon, int day, int now);
 Schedule write_content(Schedule schedule_info);
 Schedule write_scheduleName(Schedule schedule_info);
 Schedule write_permissionBit(Schedule schedule_info);
@@ -170,7 +170,6 @@ void main() {
 		if (head == NULL) {// This case means linked list is empty. Print NO SCHEDULE
 			move(List_Yp_1, List_Xp);
 			addstr("\n        NO SCHEDULE        \n");
-			return;
 		}
 		else {
 			for (i = 0; i < 3; i++) {
@@ -187,15 +186,15 @@ void main() {
 				current = current->next;
 				print_list_detail(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
 			}
-			if (i != 1) {
-				i--;
-			}
 		}
 		refresh();
 
 		while (1) {
 			ch = getchar();
 			if (ch == 'a') { //prev page
+				if (i != 1) {
+					i--;
+				}
 				isHead = current;
 				if (head == NULL) { //if linked list is empty, ignore next page call
 					continue;
@@ -831,7 +830,7 @@ void search_schedule(int *year, int *year_and_month, int *date, int target) {
 
 	sprintf(filename, "../Data/ScheduleData/%d/%d_Schedule.txt", *year, *year_and_month); //make file path
 
-																						  //make Linked List
+	//make Linked List
 	head = make_schedulelist(0, filename, date);
 
 	return;
@@ -895,6 +894,7 @@ struct node * make_schedulelist(int mode, char *filename, int *date) {
 			current->pre = prev;
 		}
 	}
+	fclose(f);
 	return first;
 }
 
@@ -1048,10 +1048,11 @@ Schedule write_content(Schedule schedule_info)
 
 //=============================================SAVE_DETAIL_FILE================================================================
 
-void save_detail_file(Schedule schedule_info, char *userID, int year, int mon, int day) {
+void save_detail_file(Schedule schedule_info, char *userID, int year, int mon, int day, int now) {
 	FILE *brief_file;
 	int schedule_year, schedule_year_and_month, date;
 	nodeptr newnode;
+	char now_c[10];
 
 	char detail_file_path[100];
 	char brief_file_path[100];
@@ -1059,7 +1060,15 @@ void save_detail_file(Schedule schedule_info, char *userID, int year, int mon, i
 	smaller_than_ten(mon, mon_c);
 	char day_c[3];
 	smaller_than_ten(day, day_c);
-	sprintf(detail_file_path, "../Data/ScheduleData/%d/%s/%s_%d%s%s.txt", year, mon_c, userID, year, mon_c, day_c);
+
+	if (now < 100000) {
+		sprintf(now_c, "0%d", now);
+	}
+	else {
+		sprintf(now_c, "%d", now);
+	}
+
+	sprintf(detail_file_path, "../Data/ScheduleData/%d/%s/%s_%d%s%s%s.txt", year, mon_c, userID, year, mon_c, day_c,now_c);
 
 	FILE *detail_file;
 	detail_file = fopen(detail_file_path, "w");
@@ -1163,20 +1172,22 @@ void insert_schedule_file(Schedule schedule_info) {
 	/* Get current time */
 	struct tm *t;
 	time_t timer;
-	int year, mon, day;
+	int year, mon, day, now;
+	
+	//change time to Korea's time
 	timer = time(NULL);
+	timer += TIMEOFFSET * 3600;
 	t = localtime(&timer);
+
 	year = t->tm_year + 1900;
 	mon = t->tm_mon + 1;
 	day = t->tm_mday;
 
+	now = (t->tm_hour)*100;
+	now = (now + t->tm_min)*100;
+	now = now + t->tm_sec;
 
-	/* Date written by the user */
-	int s_date;
-	int s_year, s_mon, s_day;
-
-	save_detail_file(schedule_info, userID, year, mon, day);
-
+	save_detail_file(schedule_info, userID, year, mon, day, now);
 }
 
 
@@ -1197,7 +1208,9 @@ void del_file(char *filepath) {
 			}
 			else {
 				prev->next = cur->next;
-				cur->next->pre = prev;
+				if (cur->next != NULL) {
+					cur->next->pre = prev;
+				}
 			}
 			free(cur);
 			break;
@@ -1239,8 +1252,9 @@ void add_file(node *insert) {
 		prev = cur;
 		cur = cur->next;
 	}
-	prev->next = insert;
-	insert->pre = prev;
+	if (cur == NULL) {
+		totalhead = insert;
+	}
 	return;
 }
 
