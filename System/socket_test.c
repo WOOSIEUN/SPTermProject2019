@@ -8,11 +8,12 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <string.h>
-#include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
-#include <netdb.h>
+#include <netinet/in.h>//**
+#include <sys/types.h>//**
+#include <sys/wait.h>//**
+#include <sys/socket.h>//**
+#include <sys/time.h>//**
+#include <netdb.h>//**
 
 #define USER_MAX 100
 #define MCODE 486
@@ -54,30 +55,127 @@ int dup_Check(char*, char* );
 void server(void);    	//**server fuction
 void callOut(void);		//**send callout
 int checkValidName(char* name);	//**check input name in callOut function
+void callout_handler(int signum);
+void calloutPrint_handler(int signum);
+int set_ticker(int);
 
 int portNumIndex;	//used in sign in to assign portnum to newUser
+
+#define READ_END 0
+#define WRITE_END 1
+
+int thepipe[2];
+pid_t parent_pid;
+char callout[20];
+int printcounter= 0;
 
 int main()
 {
 	int forkreturn;
-	pthread_t server_thread;
 
 	set_SIGIO();	
 	get_userData();	
+	start_Screen();
 	
-	//********THIS FUNCT SHOULD BE CALLED AFTER GET USERDATA
+	//********FORK PART SHOULD BE CALLED AFTER LOGIN
+	/*
+	** make 2 process for socket
+		-parent : main process
+		-child  : server process
+
+		IF SERVER GET CALL FROM OTHER P, 
+		CHILD SEND SIGNAL TO PARENT 
+		THEN PARENT GET DATA FROM PIPE AND SAVE 
+	 */
+
+	parent_pid = getpid();    //save parent process's pid
+	pipe(thepipe);
 	
-	if(forkreturn = fork())//if parent process
+	if(forkreturn=fork())//if parent process
 	{
-		start_Screen();
+		//set handlers
+		signal(SIGUSR1,callout_handler); 
+		signal(SIGALRM,calloutPrint_handler);
+
+		//	->READ
+		close(thepipe[WRITE_END]);
+		
 		callOut();
 	}
 	else//child p
-		server();
+	{
+		//      ->WRITE
+		close(thepipe[READ_END]);
 
-	//wait();//******************wait
+		server();
+	}
 	endwin();
 }
+
+/*
+	< handler for signal SIGUSR1>
+if server get callout from other p, 
+server send sigusr1
+	-get callout from pipe
+	-set alarm for print callout
+*/
+void callout_handler(int signum)
+{
+	//read callout from pipe
+	read(thepipe[READ_END],callout,sizeof(callout));
+	
+	set_ticker(2000);
+}
+
+//	< set timer>
+int set_ticker(int n_msecs)
+{
+	struct itimerval new_timeset;
+	long n_sec,n_usecs;
+
+	n_sec = n_msecs /1000;
+	n_usecs = (n_msecs % 1000) * 1000L;
+
+	new_timeset.it_interval.tv_sec = n_sec;
+	new_timeset.it_interval.tv_usec = n_usecs;
+	new_timeset.it_value.tv_sec = n_sec;
+	new_timeset.it_value.tv_usec = n_usecs;
+
+	return setitimer(ITIMER_REAL,&new_timeset,NULL);
+}
+
+
+/*
+   	< handler for signal SIGALRM >
+ */
+void calloutPrint_handler(int signum)
+{
+	if(printcounter%2 == 0)
+		standout();
+	
+	mvprintw(LINES-3,5,"^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^");
+	mvprintw(LINES-2,5,"!!!     [%5s] IS CALLING YOU NOW      !!!",callout);
+	mvprintw(LINES-1,5,"v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v");
+
+
+	if(printcounter%2 == 0)
+		standend();
+	refresh();
+
+	if(printcounter++ == 10)
+	{
+		//remove callout
+		mvprintw(LINES-3,0,"                                                              ");
+	        mvprintw(LINES-2,0,"                                                              ");
+		mvprintw(LINES-1,0,"                                                              ");
+		refresh();
+
+
+		alarm(0);	//turn off alarm
+		printcounter = 1;
+	}
+}
+
 
 /*	< server socket >
  recieve message from other client 
@@ -88,7 +186,7 @@ void server(void)//*************************************************************
 	int serversock_id,sock_fd;	//server socket's fd , active sicket's fd
 	struct sockaddr_in server_add;	
 	struct hostent* hp;
-	char message[150];	//buffer to receive message
+	char call_from[20];	//buffer to receive message
 	int myport = userData[thisUser_Index].portNum;
 
 	//1. get a socket
@@ -111,16 +209,21 @@ void server(void)//*************************************************************
 	//5. main loop
 	while (1)
 	{
-		//got message
+		//!connect
 		sock_fd = accept(serversock_id, NULL, NULL);
+		
 		//we should recieve message(read)
-		read(sock_fd,message, sizeof(message));	//get message from client
-		mvprintw(LINES-2,0," ------------%s is calling you now !!-------------- ",message);
-		refresh();
+		read(sock_fd , call_from, sizeof(call_from));	//get message from client
+		
+		//signal to parent process to send message
+		kill(parent_pid,SIGUSR1);
+		write(thepipe[WRITE_END],call_from,sizeof(call_from));
+
 	}
 	
 	
 }
+
 //*********************************************************************************************
 /*
 	<CALLOUT other user>
@@ -139,9 +242,9 @@ void callOut(void)
 	signal(SIGIO,SIG_IGN);	//ignore sigio
 
 	clear();
-	mvaddstr(0,0,"------------------------------------------------------------------------");
+	mvaddstr(0,0,"-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.");
 	mvaddstr(1,0,"      LETS CALL OUT FELLOW  |  input 'quit' if you want to quit         ");
-	mvaddstr(2,0,"------------------------------------------------------------------------");
+	mvaddstr(2,0,"-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.");
 	mvaddstr(3,0,"              please  input name of fellow to call out                  ");
 
 	//1. get receiver's Name
@@ -155,7 +258,7 @@ void callOut(void)
 
 		//check valid of User Name
 		if(pnum = checkValidName(to))
-		{	mvprintw(7,0," your target portnum :%d",pnum);
+		{	
 			mvaddstr(6,0,"                                              ");//remove warning
 			break;
 		}
@@ -210,6 +313,7 @@ void callOut(void)
 			mvaddstr(16,0,"+                                                                +-+-+-+-+-+-+");
 			refresh();
                         sleep(3);
+			break;
 		}
 		else
 		{
@@ -419,7 +523,7 @@ int  log_In()
 	thisUser_Index = userIndex;
 
 	//4. welcome sign ( login successed ) 
-	mvprintw(13, 0, "             LOG IN SUCCESSED your index: %d portnum : %d",thisUser_Index,userData[thisUser_Index].portNum);
+	mvprintw(13, 0, "             LOG IN SUCCESSED");
 	mvprintw(14, 0, "           WELCOME %s  . . .", userData[thisUser_Index].Name);
 	refresh();
 	
