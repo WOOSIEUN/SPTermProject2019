@@ -153,6 +153,7 @@ void main() {
 
 
 					//start main screen
+	//get user data
 	strcpy(user_ID, userData[thisUser_Index].ID);
 	strcpy(user_Name, userData[thisUser_Index].Name);
 	user_isMaster = userData[thisUser_Index].isMaster;
@@ -172,6 +173,9 @@ void main() {
 			addstr("\n        NO SCHEDULE        \n");
 		}
 		else {
+			//print brief schedule list.
+			//code is complicated by an initial design error.
+			//It may be difficult to understand, but it is a code that is written based on various conditions.
 			for (i = 0; i < 3; i++) {
 				if (current != head && current->next == NULL) {
 					break;
@@ -199,20 +203,20 @@ void main() {
 				if (head == NULL) { //if linked list is empty, ignore next page call
 					continue;
 				}
-				for (j = 0; j < i;j++) {
+				for (j = 0; j < i;j++) { //check if this is first page.
 					isHead = isHead->pre;
 				}
 				if (isHead == head) { //ignore prev page call
 					continue;
 				}
-				for (j = 0; j < 3;j++) {
+				for (j = 0; j < 3;j++) {//if prev page's first node is head.
 					isHead = isHead->pre;
 				}
-				if (isHead == head) {
+				if (isHead == head) {// prev page's first node is head, current = head.
 					current = head;
 				}
 				else {
-					for (j = 0; j < i + 3; j++) {
+					for (j = 0; j < i + 3; j++) {//if prev page's first node isn't head just move pointer.
 						current = current->pre;
 					}
 				}
@@ -229,6 +233,7 @@ void main() {
 			}
 			else if (ch == '1') { //if user wants to add schedule.
 				clear();
+				//turn on echo
 				echo();
 				screen_fix_info();
 				Schedule schedule_information;
@@ -239,12 +244,14 @@ void main() {
 				clear();
 				return_today();
 				print_menu();
+				//make linked list again. cuz this case has possibility total linked list's contents have changed.
 				search_schedule(&year, &year_and_month, &date, today);
 				current = head;
 				break;
 			}
 			else if (ch == '2') { //if user wants to view schedule detail.
 				move(8, 50);
+				// turn on echo and get choice. after get choice, turn off echo.
 				echo();
 				scanw("%d", &choice);
 				noecho();
@@ -265,14 +272,17 @@ void main() {
 				clear();
 				return_today();
 				print_menu();
+				//make linked list again. cuz this case has possibility total linked list's contents have changed.
 				search_schedule(&year, &year_and_month, &date, today);
 				current = head;
 				break;
 			}
 			else if (ch == '3') { //if user wants to search schedule
 				move(10, 42);
+				//turn on echo and get search day or month
 				echo();
 				scanw("%d", &today);
+				//turn off echo and clean user input
 				noecho();
 				move(10, 42);
 				addstr("         ");
@@ -280,11 +290,12 @@ void main() {
 				clear();
 				return_today();
 				print_menu();
+				//give search day or month to function. make new linked list.
 				search_schedule(&year, &year_and_month, &date, today);
 				current = head;
 				break;
 			}
-			else if (ch == '4'){//message
+			else if (ch == '4') {//message
 
 			}
 			else if (ch == '5') { //if user wants to quit this program, return here.
@@ -684,7 +695,7 @@ int dup_Check(char* label, char* buffer)
 
 
 // main screen
-void clear_list_detail() {
+void clear_list_detail() { //just clean brief list
 	int xp, yp;
 
 	xp = List_Xp;
@@ -728,6 +739,7 @@ void print_list_detail(int order, int group, int year, int year_and_month) {
 		strcpy(sort, "User");
 	}
 
+	//determine y position
 	if (order == 1) {
 		xp = List_Xp;
 		yp = List_Yp_1;
@@ -740,10 +752,12 @@ void print_list_detail(int order, int group, int year, int year_and_month) {
 		xp = List_Xp;
 		yp = List_Yp_3;
 	}
-	else if (order == 4) {
+	else if (order == 4) { //order error
 		return;
 	}
 
+	//get start time and end time to print out time at brief list.
+	//I want to print time like HH:MM
 	nstart_time = (current->start_time / 100);
 	nstart_min = (current->start_time - (nstart_time * 100));
 	nend_time = (current->end_time / 100);
@@ -754,7 +768,8 @@ void print_list_detail(int order, int group, int year, int year_and_month) {
 	smaller_than_ten(nend_time, end_time);
 	smaller_than_ten(nend_min, end_min);
 
-	if (strcmp(userData[thisUser_Index].ID, current->userID) != 0) { //search name
+	if (strcmp(userData[thisUser_Index].ID, current->userID) != 0) { //if author isn't same as login user
+		//search user name
 		for (i = 0; i < userData_Size; i++) {
 			if (strcmp(userData[i].ID, current->userID) == 0) {
 				move(yp, xp);
@@ -762,17 +777,21 @@ void print_list_detail(int order, int group, int year, int year_and_month) {
 			}
 		}
 	}
-	else { //login user == write user
+	else { //login user == write user, just print it.
 		move(yp, xp);
 		printw("[%s]  written by %s\n", sort, userData[thisUser_Index].Name);
 	}
+	//print date and time
 	move(yp + 1, xp);
 	printw("%d.%d.%d  %s:%s ~ %s:%s\n", year, year_and_month - (year * 100), current->date, start_time, start_min, end_time, end_min);
+	//print schedule name
 	move(yp + 2, xp);
 	printw("%s\n", current->scheduleName);
 	return;
 }
 
+// if input target is smaller than ten, put 0 front of the input target number.
+// or not, just change decimal int type number to string type
 void smaller_than_ten(int target, char *targetstr) {
 	if (target < 10) {
 		sprintf(targetstr, "0%d", target);
@@ -852,6 +871,7 @@ struct node * make_schedulelist(int mode, char *filename, int *date) {
 	char ct_date[3], ct_start[5], ct_end[5];
 	int t_date, t_start, t_end;
 
+	//file open
 	f = fopen(filename, "r");
 	if (f == NULL) {
 		perror("open error");
@@ -887,7 +907,7 @@ struct node * make_schedulelist(int mode, char *filename, int *date) {
 		newnode->next = NULL;
 		newnode->pre = NULL;
 
-		if (first == NULL) {
+		if (first == NULL) { //if linked list empty.
 			first = newnode;
 			current = first;
 		}
@@ -902,12 +922,14 @@ struct node * make_schedulelist(int mode, char *filename, int *date) {
 	return first;
 }
 
+//allocate node.
 struct node *allocate_node() {
 	nodeptr ptr = NULL;
 	ptr = (struct node *)malloc(sizeof(struct node));
 	return ptr;
 }
 
+//This function just initialize node.
 void initialize_node(nodeptr current, int date, int start, int end, char *ID, char * permission, char *sname, char *filepath) {
 	current->date = date;
 	current->start_time = start;
@@ -1160,7 +1182,7 @@ void read_file(char *filepath) {
 		if (ch == 'q') { //exit
 			return;
 		}
-		else if (ch == 'd') {
+		else if (ch == 'd') { //delete schedule
 			del_file(filepath);
 			return;
 		}
@@ -1187,6 +1209,7 @@ void insert_schedule_file(Schedule schedule_info) {
 	mon = t->tm_mon + 1;
 	day = t->tm_mday;
 
+	// hhmmss variable to make brief file path.
 	now = (t->tm_hour) * 100;
 	now = (now + t->tm_min) * 100;
 	now = now + t->tm_sec;
@@ -1206,22 +1229,25 @@ void del_file(char *filepath) {
 	cur = totalhead;
 	while (cur != NULL) {
 		if (strcmp(cur->filepath, filepath) == 0) {
-			if (cur == totalhead) {
+			//if filepath is same, we determine current node is the node we need to delete.
+			if (cur == totalhead) { //if current is head.
 				totalhead = cur->next;
 				totalhead->pre = NULL;
 			}
-			else {
+			else { //normal case.
 				prev->next = cur->next;
-				if (cur->next != NULL) {
+				if (cur->next != NULL) { //current is not end node.
 					cur->next->pre = prev;
 				}
 			}
 			free(cur);
 			break;
 		}
+		//go to next node
 		prev = cur;
 		cur = cur->next;
 	}
+	//delete real file.
 	remove(filepath);
 	return;
 }
@@ -1232,20 +1258,21 @@ void add_file(node *insert) {
 
 	//doubly linked list insertion
 	cur = totalhead;
-	while (cur != NULL) {
-		if (cur->date >= insert->date) {
-			if (cur->date == insert->date) {
-				while (cur->start_time < insert->start_time) {
+	while (cur != NULL) { //file is not empty.
+		if (cur->date >= insert->date) { //find position.
+			if (cur->date == insert->date) { //if date is same, program needs to compare time to put new node.
+				while (cur->start_time < insert->start_time) { // find correct position
 					prev = cur;
 					cur = cur->next;
 				}
 			}
-			if (cur == totalhead) {
+			// insert node
+			if (cur == totalhead) { //if new node should insert first.
 				insert->next = cur;
 				cur->pre = insert;
 				totalhead = insert;
 			}
-			else {
+			else { //normal case
 				insert->next = cur;
 				cur->pre = insert;
 				prev->next = insert;
@@ -1253,15 +1280,17 @@ void add_file(node *insert) {
 			}
 			return;
 		}
+		// go to next node.
 		prev = cur;
 		cur = cur->next;
 	}
-	if (cur == NULL) {
+	if (cur == NULL) { //if file is empty.
 		totalhead = insert;
 	}
 	return;
 }
 
+//save brief file at correct path.
 void save_brief_file(char *tempfilename) {
 	FILE * f = NULL;
 	nodeptr cur = NULL;
