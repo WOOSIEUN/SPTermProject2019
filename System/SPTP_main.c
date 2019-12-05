@@ -23,9 +23,9 @@
 
 #define TIMEOFFSET 9
 #define List_Xp 10
-#define List_Yp_1 15
-#define List_Yp_2 21
-#define List_Yp_3 27
+#define List_Yp_1 16
+#define List_Yp_2 22
+#define List_Yp_3 28
 
 #define ESC 0x1b
 #define DEL 0x7f
@@ -216,7 +216,7 @@ void main() {
 						current = current->pre;
 					}
 				}
-				
+
 				clear_list_detail();
 				break;
 			}
@@ -284,7 +284,10 @@ void main() {
 				current = head;
 				break;
 			}
-			else if (ch == '4') { //if user wants to quit this program, return here.
+			else if (ch == '4'){//message
+
+			}
+			else if (ch == '5') { //if user wants to quit this program, return here.
 				endwin();
 				return;
 			}
@@ -807,7 +810,8 @@ void print_menu() {//print menu. Details of this function need to be modified.
 	addstr("1. Add Schedule.\n");
 	addstr("2. View Schedule Detail. \n   (Enter Schedule Number. Press Enter Key.)  :\n");
 	addstr("3. Search Schedule.\n   (Enter YYYYMMDD. Press Enter Key.)  :\n");
-	addstr("4. Quit.\n");
+	addstr("4. Message");
+	addstr("5. Quit.\n");
 	addstr("*********************************************************\n");
 	refresh();
 }
@@ -925,7 +929,7 @@ void screen_fix_info()
 	//It is on the writing screen.
 	clear();
 	move(0, 0);
-	addstr("w: write    r: read\n");
+	addstr("             ADD SCHEDULE\n");
 
 	move(1, 0);
 	addstr("*************************************************\n");
@@ -1068,7 +1072,7 @@ void save_detail_file(Schedule schedule_info, char *userID, int year, int mon, i
 		sprintf(now_c, "%d", now);
 	}
 
-	sprintf(detail_file_path, "../Data/ScheduleData/%d/%s/%s_%d%s%s%s.txt", year, mon_c, userID, year, mon_c, day_c,now_c);
+	sprintf(detail_file_path, "../Data/ScheduleData/%d/%s/%s_%d%s%s%s.txt", year, mon_c, userID, year, mon_c, day_c, now_c);
 
 	FILE *detail_file;
 	detail_file = fopen(detail_file_path, "w");
@@ -1090,12 +1094,12 @@ void save_detail_file(Schedule schedule_info, char *userID, int year, int mon, i
 	date = schedule_info.date % 100;
 	newnode = allocate_node();
 	initialize_node(newnode, date, schedule_info.start_time, schedule_info.end_time, userID, schedule_info.permissionBit, schedule_info.scheduleName, detail_file_path);
-	
+
 	schedule_year_and_month = schedule_info.date / 100;
 	schedule_year = schedule_year_and_month / 100;
-	
+
 	sprintf(brief_file_path, "../Data/ScheduleData/%d/%d_Schedule.txt", schedule_year, schedule_year_and_month);
-	
+
 	totalhead = make_schedulelist(1, brief_file_path, 0);
 	add_file(newnode);
 	save_brief_file(brief_file_path);
@@ -1173,7 +1177,7 @@ void insert_schedule_file(Schedule schedule_info) {
 	struct tm *t;
 	time_t timer;
 	int year, mon, day, now;
-	
+
 	//change time to Korea's time
 	timer = time(NULL);
 	timer += TIMEOFFSET * 3600;
@@ -1183,8 +1187,8 @@ void insert_schedule_file(Schedule schedule_info) {
 	mon = t->tm_mon + 1;
 	day = t->tm_mday;
 
-	now = (t->tm_hour)*100;
-	now = (now + t->tm_min)*100;
+	now = (t->tm_hour) * 100;
+	now = (now + t->tm_min) * 100;
 	now = now + t->tm_sec;
 
 	save_detail_file(schedule_info, userID, year, mon, day, now);
