@@ -19,11 +19,11 @@
 #include "MOYEORA_header.h"
 
 /*==================================================** MAIN **==============================================================
-	> MULTI PROCESS
-	PARENT : MAIN PROCESS FOR SCHEDULE PROGRAM 
-	CHILD  : SERVER PROCESS FOR RECEIVE CALLOUT FROM OTHER USER
+> MULTI PROCESS
+PARENT : MAIN PROCESS FOR SCHEDULE PROGRAM
+CHILD  : SERVER PROCESS FOR RECEIVE CALLOUT FROM OTHER USER
 ==========================================================================================================================*/
-void main() 
+void main()
 {
 	int forkreturn;
 
@@ -34,7 +34,7 @@ void main()
 
 	parent_pid = getpid();    //save parent process's pid
 	pipe(thepipe);
-	
+
 	if (forkreturn = fork())//if parent process
 	{
 		//set handlers
@@ -54,11 +54,11 @@ void main()
 	}
 	endwin();
 
-	
+
 }
 
 /*================================================== INITIALIZE ===========================================================
-	> SET SIGIO & SET USERDATA
+> SET SIGIO & SET USERDATA
 ==========================================================================================================================*/
 //   < set sigio signal >
 void set_SIGIO()
@@ -101,9 +101,9 @@ void get_userData()
 }
 
 /*================================================== START SCREEN =========================================================
-		1. START SCREEN -> LOGIN -> MAIN SCREEN
-						OR
-		2. START SCREEN -> SIGN IN -> MAIN SCREEN
+1. START SCREEN -> LOGIN -> MAIN SCREEN
+OR
+2. START SCREEN -> SIGN IN -> MAIN SCREEN
 ==========================================================================================================================*/
 //   < print start menu >
 void startScreen_MAIN()
@@ -128,7 +128,7 @@ void startScreen_MAIN()
 		mvaddstr(7, 23, "   ^    :   w   ");
 		mvaddstr(8, 23, " < v >  : a s d ");
 		mvaddstr(9, 23, " select : enter ");
-		
+
 		if (start_choice)
 		{
 			mvaddstr(15, 23, "     LOG IN     ");   // choice (0)  default -> login 
@@ -457,11 +457,11 @@ int dup_Check(char* label, char* buffer)
 
 
 /*=================================================== MAIN SCREEN ==========================================================
-					MENU	 :		1. add	 / 2. view detail & delete	 / 3. seach		/ 4. callOut	/ 5. exit  
-				-----------
-				SCHEDULE 1
-	prev	<<	SCHEDULE 2	>>	next
-				SCHEDULE 3
+MENU	 :		1. add	 / 2. view detail & delete	 / 3. seach		/ 4. callOut	/ 5. exit
+-----------
+SCHEDULE 1
+prev	<<	SCHEDULE 2	>>	next
+SCHEDULE 3
 ============================================================================================================================*/
 //	<	main function for MAIN SCREEN	> 
 void mainScreen_MAIN()
@@ -473,35 +473,48 @@ void mainScreen_MAIN()
 	//0. init screen	
 	today = return_today();
 	init_mainScreen(&year, &year_and_month, &date, &today);
-	
+
 	while (1) {
 		//1. print linked list
 		index = print_Brief_list(year, year_and_month);
 
 		//2. get input of user
-		switch(input = getchar())
+		while (1)
 		{
-		case 'a': //<---move to prev page of list
-				if (head != NULL && isHead != head)//if its not null list & front page
-					isHead = move_Brief_list(0,index);	
-				break;
-
-		case 'd': //--->move to next page of list
-				if (head != NULL && current->next != NULL) //if list is not end
-					move_Brief_list(1,index);
-				break;
-
-		case '1': //---	Menu [1] : move to add schedule screen 
+			input = getchar();
+			if (input == 'a') { //<---move to prev page of list
+				if (head != NULL) {//if its not null list
+					isHead = move_Brief_list(0, index);
+					if (isHead == head) { // if ishead is head, program should not print brief list again.
+						continue;
+					}
+					else { //print the list.
+						break;
+					}					
+				} 
+				else { //head is null.
+					continue;
+				}
+			}
+			else if (input == 'd') { //--->move to next page of list
+				if (head != NULL && current->next != NULL) {//if list is not end
+					move_Brief_list(1, index);
+					break;
+				}
+				else if (current->next == NULL) // if current->next is null, program should not print brief list again.
+					continue;				
+			}
+			else if (input == '1') { //---	Menu [1] : move to add schedule screen 
 				addSchedule_MAIN();
 				init_mainScreen(&year, &year_and_month, &date, &today);
 				break;
-			
-		case '2'://---	Menu [2] : view detail of 1 schedule
+			}
+			else if (input == '2') { //---	Menu [2] : view detail of 1 schedule
 				viewDetail_MAIN(index, year, year_and_month);
 				init_mainScreen(&year, &year_and_month, &date, &today);
 				break;
-
-		case '3': //---	Menu [3] : search schedule
+			}
+			else if (input == '3') { //---	Menu [3] : search schedule
 				move(10, 42);
 				echo();
 				scanw("%d", &today);
@@ -511,28 +524,30 @@ void mainScreen_MAIN()
 
 				init_mainScreen(&year, &year_and_month, &date, &today);
 				break;
-
-		case '4': //---	Menu [4] : send callout
+			}
+			else if (input == '4') { //---	Menu [4] : send callout
 				callOut_MAIN();
 				init_mainScreen(&year, &year_and_month, &date, &today);
 				break;
-
-		case '5': //---	Menu [5] : quit program
-				//NEED TO END SOCKET!! (CHILD P)
+			}
+			else if (input == '5') { //---	Menu [5] : quit program
+				  //NEED TO END SOCKET!! (CHILD P)
 				endwin();
 				exit(1);
+				break;
+			}
 		}
 	}
-	
+
 }
 
 //	- < init mainScreen upward part >
-void init_mainScreen(int* year, int* year_and_month, int* date,int* today)
+void init_mainScreen(int* year, int* year_and_month, int* date, int* today)
 {
 	clear();
 
 	return_today();
-	print_menu(); 
+	print_menu();
 
 	search_schedule(year, year_and_month, date, *today);
 
@@ -557,38 +572,34 @@ void search_schedule(int* year, int* year_and_month, int* date, int target) {
 
 	sprintf(filename, "../Data/ScheduleData/%d/%d_Schedule.txt", *year, *year_and_month); //make file path
 
-	//make Linked List
+																						  //make Linked List
 	head = make_schedulelist(0, filename, date);
 
 	return;
 }
 
 //	- < print brief list to main page>
-int print_Brief_list(int year,int year_and_month)
+int print_Brief_list(int year, int year_and_month)
 {
-	int i;
+	int i=0;
 
 	if (head == NULL) {// if linked list is empty -> Print NO SCHEDULE
 		move(List_Yp_1, List_Xp);
 		addstr("\n        NO SCHEDULE        \n");
 	}
-	else 
-		for ( i = 0; i < 3; i++) 
+	else
+		for(i = 0; i < 3; i++)
 		{
-			if (current != head && current->next == NULL)
-				break;
-			else if (current == head && i == 0) {
+			if (current == head && i == 0) { //special case. we want to print head.
 				printBrief3(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
-				
-				if (current->next == NULL) 
-					break;
-				
-				continue;
 			}
-			current = current->next;
-			printBrief3(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
+			else {
+				current = current->next;
+				printBrief3(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
+			}
+			if (current->next == NULL)
+				break;
 		}
-	
 	refresh();
 
 	return i;
@@ -602,32 +613,26 @@ nodeptr move_Brief_list(int how, int index)
 	if (how)// case 1. next page ->>>
 	{
 		clear_list_detail();
-
-		return NULL;
 	}
 	else//case 2. prev page <<<-
 	{
-		if (index != 1) 
-			index--;
-		
 		isHead = current;
-	
-		for (int j = 0; j < index; j++) 
-			isHead = isHead->pre;
-		
-		for (int j = 0; j < 3; j++) 
-			isHead = isHead->pre;
-		
-		if (isHead == head)
-			current = head;
-		else 
-			for (int j = 0; j < index + 3; j++) 
-				current = current->pre;
-			
-		clear_list_detail();
 
-		return isHead;
+		if (index == 3)
+			index--;
+
+		for (int j = 0; j < index; j++)
+			isHead = isHead->pre;
+
+		if (isHead == head)
+			return isHead;
+		else 
+			for (int j = 0; j < index + 3; j++)
+				current = current->pre;
+
+		clear_list_detail();
 	}
+	return isHead;
 }
 
 //	< remove breif list >
@@ -724,11 +729,11 @@ void printBrief3(int order, int group, int year, int year_and_month) {
 //	< Print Today's Date >
 //	return today's date 
 //	Use header file time.h
-int return_today() 
+int return_today()
 {
 	struct tm* t = return_Time();
 	int today;
-	
+
 	today = (t->tm_year + 1900) * 100;
 	today = (today + (t->tm_mon + 1)) * 100;
 	today = (today + t->tm_mday);
@@ -746,7 +751,7 @@ struct tm* return_Time(void)
 {
 	struct tm* t;
 	time_t timer;
-	
+
 	//change time to Korea's time
 	timer = time(NULL);
 	timer += TIMEOFFSET * 3600;
@@ -776,7 +781,7 @@ void print_menu() {//print menu. Details of this function need to be modified.
 	refresh();
 }
 
-struct node* make_newNode(int date, int start, int end, char* ID, char* permission, char* sname, char* filepath) 
+struct node* make_newNode(int date, int start, int end, char* ID, char* permission, char* sname, char* filepath)
 {
 	nodeptr newNode = (struct node*)malloc(sizeof(struct node));
 
@@ -853,15 +858,15 @@ struct node* make_schedulelist(int mode, char* filename, int* date) {
 }
 
 /*================================================= M [1] ADD NEW SCHEDULE ===================================================
-		GET USER'S SCHEDULE INPUT ->	SAVE DATA TO	1. DETAIL FILE	2. BRIEF FILE
+GET USER'S SCHEDULE INPUT ->	SAVE DATA TO	1. DETAIL FILE	2. BRIEF FILE
 ============================================================================================================================*/
 /*	* < print add schedule page >
-	process user's data and call filesave function
+process user's data and call filesave function
 */
 void addSchedule_MAIN()
 {
 	Schedule schedule_info;
-	
+
 	clear();
 
 	//print upward screen.
@@ -881,7 +886,7 @@ void addSchedule_MAIN()
 	refresh();
 
 	// get user's input & save data to file
-	save_newSfile( get_newSinput() );
+	save_newSfile(get_newSinput());
 
 }
 
@@ -989,12 +994,12 @@ Schedule get_newSinput()
 }
 
 /*	< save new schedule to file >
-	detail & brief file
+detail & brief file
 */
-void save_newSfile(Schedule schedule_info) 
+void save_newSfile(Schedule schedule_info)
 {/* Get current time */
-	//FILE* brief_file;
-	//nodeptr newnode;
+ //FILE* brief_file;
+ //nodeptr newnode;
 	struct tm* t = return_Time();
 	int year, mon, day, now;
 	int schedule_year, schedule_year_and_month, date;
@@ -1017,9 +1022,9 @@ void save_newSfile(Schedule schedule_info)
 	smaller_than_ten(mon, mon_c);
 	smaller_than_ten(day, day_c);
 
-	if (now < 100000) 
+	if (now < 100000)
 		sprintf(now_c, "0%d", now);
-	else 
+	else
 		sprintf(now_c, "%d", now);
 
 	sprintf(detail_file_path, "../Data/ScheduleData/%d/%s/%s_%d%s%s%s.txt", year, mon_c, userID, year, mon_c, day_c, now_c);
@@ -1094,7 +1099,7 @@ void add_file(node* insert)
 }
 
 //	< save brief file at correct path >
-void save_brief_file(char* tempfilename) 
+void save_brief_file(char* tempfilename)
 {
 	FILE* f = NULL;
 	nodeptr cur = NULL;
@@ -1115,12 +1120,12 @@ void save_brief_file(char* tempfilename)
 
 
 /*============================================== M [2] PRINT DETAIL OF SCHEDULE ==============================================
-		1. SEE DATAIL OF FILE
-		2. DELETE SCHEDULE FILE
+1. SEE DATAIL OF FILE
+2. DELETE SCHEDULE FILE
 ============================================================================================================================*/
 
 //	* < print detail data of schedule >
-void viewDetail_MAIN(int index,int year,int year_and_month)
+void viewDetail_MAIN(int index, int year, int year_and_month)
 {
 	char tempfilename[100];
 	nodeptr choiceptr = NULL;
@@ -1133,10 +1138,14 @@ void viewDetail_MAIN(int index,int year,int year_and_month)
 	move(8, 50);
 	addstr("    ");
 
+	if (index != 3) {
+		index++;
+	}
+
 	choiceptr = current;
 	for (int j = index; j > choice; j--) //calculate file path
 		choiceptr = choiceptr->pre;
-	
+
 	//make total linked list to delete files.
 	sprintf(tempfilename, "../Data/ScheduleData/%d/%d_Schedule.txt", year, year_and_month); //make file path
 	totalhead = make_schedulelist(1, tempfilename, 0);
@@ -1208,7 +1217,7 @@ void read_file(char* filepath) {
 }
 
 //delete file from brief list and data system.
-void del_file(char* filepath) 
+void del_file(char* filepath)
 {
 	nodeptr cur = NULL, prev = NULL;
 
@@ -1241,12 +1250,12 @@ void del_file(char* filepath)
 
 
 /*============================================== M [4] CALL OUT OTHER USER ==================================================
-		1. SEE DATAIL OF FILE
-		2. DELETE SCHEDULE FILE
+1. SEE DATAIL OF FILE
+2. DELETE SCHEDULE FILE
 ============================================================================================================================*/
 /*	<CALLOUT other user>
-  make active socket
-  send callout message
+make active socket
+send callout message
 */
 void callOut_MAIN(void)
 {
@@ -1344,7 +1353,7 @@ void callOut_MAIN(void)
 
 /*	< check valid name and return portNum >
 if name is not exist in User, return -1
- */
+*/
 int checkValidName(char* name)
 {
 	for (int i; i < userData_Size; i++)
@@ -1355,11 +1364,11 @@ int checkValidName(char* name)
 	return -1;
 }
 /*
-	< handler for signal SIGUSR1>
+< handler for signal SIGUSR1>
 if server get callout from other p,
 server send sigusr1
-	-get callout from pipe
-	-set alarm for print callout
+-get callout from pipe
+-set alarm for print callout
 */
 void callout_handler(int signum)
 {
@@ -1387,9 +1396,9 @@ int set_ticker(int n_msecs)
 }
 
 /*	< handler for signal SIGALRM >
-	-print callout from other user 
-	-recur standout/standend *10
- */
+-print callout from other user
+-recur standout/standend *10
+*/
 void calloutPrint_handler(int signum)
 {
 	if (printcounter % 2 == 0)
@@ -1419,8 +1428,8 @@ void calloutPrint_handler(int signum)
 }
 
 /*	< server socket >
- recieve message from other client
- and save message data in file
+recieve message from other client
+and save message data in file
 */
 void server(void)//********************************************************************
 {
@@ -1437,7 +1446,7 @@ void server(void)//*************************************************************
 	bzero(&server_add, sizeof(server_add));	//init server address structure
 	hp = gethostbyname(HOSTNAME);			//get host ip
 
-	//3. fill in socket address structure & bind
+											//3. fill in socket address structure & bind
 	bcopy((void*)hp->h_addr, (void*)&server_add.sin_addr, hp->h_length);
 	server_add.sin_port = htons(myport);
 	server_add.sin_family = AF_INET;
@@ -1456,7 +1465,7 @@ void server(void)//*************************************************************
 		//we should recieve message(read)
 		read(sock_fd, call_from, sizeof(call_from));	//get message from client
 
-		//signal to parent process to send message
+														//signal to parent process to send message
 		kill(parent_pid, SIGUSR1);
 		write(thepipe[WRITE_END], call_from, sizeof(call_from));
 
