@@ -8,10 +8,10 @@
 #define ENTER 13   //[enter] = enter
 
 #define TIMEOFFSET 9
-#define List_Xp 10
-#define List_Yp_1 16
-#define List_Yp_2 22
-#define List_Yp_3 28
+#define List_Xp 25
+#define List_Yp_1 18
+#define List_Yp_2 24
+#define List_Yp_3 30
 
 #define ESC 0x1b
 #define DEL 0x7f
@@ -89,8 +89,8 @@ BOX schedule_list_check_o_or_x;
 /*	socket variables	*/
 int thepipe[2];
 int  parent_pid;
-char callout[20];
-int printcounter= 0;
+char  callout[20];
+int printcounter= 1;
 int portNumIndex;	//used in sign in to assign portnum to newUser
 
 //-----------FUNCTIONS

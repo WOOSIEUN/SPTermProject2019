@@ -19,11 +19,11 @@
 #include "MOYEORA_header.h"
 
 /*==================================================** MAIN **==============================================================
-	> MULTI PROCESS
-	PARENT : MAIN PROCESS FOR SCHEDULE PROGRAM 
-	CHILD  : SERVER PROCESS FOR RECEIVE CALLOUT FROM OTHER USER
+> MULTI PROCESS
+PARENT : MAIN PROCESS FOR SCHEDULE PROGRAM
+CHILD  : SERVER PROCESS FOR RECEIVE CALLOUT FROM OTHER USER
 ==========================================================================================================================*/
-void main() 
+void main()
 {
 	int forkreturn;
 
@@ -34,7 +34,7 @@ void main()
 
 	parent_pid = getpid();    //save parent process's pid
 	pipe(thepipe);
-	
+
 	if (forkreturn = fork())//if parent process
 	{
 		//set handlers
@@ -54,11 +54,11 @@ void main()
 	}
 	endwin();
 
-	
+
 }
 
 /*================================================== INITIALIZE ===========================================================
-	> SET SIGIO & SET USERDATA
+> SET SIGIO & SET USERDATA
 ==========================================================================================================================*/
 //   < set sigio signal >
 void set_SIGIO()
@@ -88,6 +88,7 @@ void get_userData()
 		i++;
 	}
 
+	portNumIndex = userData[i-1].portNum;
 	//save number of all users
 	userData_Size = i;
 
@@ -101,9 +102,9 @@ void get_userData()
 }
 
 /*================================================== START SCREEN =========================================================
-		1. START SCREEN -> LOGIN -> MAIN SCREEN
-						OR
-		2. START SCREEN -> SIGN IN -> MAIN SCREEN
+1. START SCREEN -> LOGIN -> MAIN SCREEN
+OR
+2. START SCREEN -> SIGN IN -> MAIN SCREEN
 ==========================================================================================================================*/
 //   < print start menu >
 void startScreen_MAIN()
@@ -127,12 +128,12 @@ void startScreen_MAIN()
 
 		mvaddstr(7, 23, "   ^    :   w   ");
 		mvaddstr(8, 23, " < v >  : a s d ");
+
 		mvaddstr(9, 23, " Select : enter ");
 
 
 		mvaddstr(12,10,"   PLEASE SELECT MENU FOR STARTING PROGRAM");
 		mvaddstr(13, 5,"= = = = = = = = = = = = = = = = = = = = = = = = = = = = = ");
-
 		if (start_choice)
 		{
 			mvaddstr(15, 23, "     LOG IN     ");   // choice (0)  default -> login 
@@ -412,8 +413,9 @@ int sign_In(void)
 
 	}
 
+	newUser.portNum = ++portNumIndex;
 	userData[++userData_Size] = newUser;
-	sprintf(fullStatus, "%s %s %s %d", userData[userData_Size].ID, userData[userData_Size].PW, userData[userData_Size].Name, userData[userData_Size].isMaster);
+	sprintf(fullStatus, "%s %s %s %d %d", userData[userData_Size].ID, userData[userData_Size].PW, userData[userData_Size].Name, userData[userData_Size].isMaster, userData[userData_Size].portNum);
 	fprintf(userData_file, "%s\n", fullStatus);
 	
 
@@ -519,11 +521,11 @@ int dup_Check(char* label, char* buffer)
 
 
 /*=================================================== MAIN SCREEN ==========================================================
-					MENU	 :		1. add	 / 2. view detail & delete	 / 3. seach		/ 4. callOut	/ 5. exit  
-				-----------
-				SCHEDULE 1
-	prev	<<	SCHEDULE 2	>>	next
-				SCHEDULE 3
+MENU	 :		1. add	 / 2. view detail & delete	 / 3. seach		/ 4. callOut	/ 5. exit
+-----------
+SCHEDULE 1
+prev	<<	SCHEDULE 2	>>	next
+SCHEDULE 3
 ============================================================================================================================*/
 //	<	main function for MAIN SCREEN	> 
 void mainScreen_MAIN()
@@ -535,66 +537,81 @@ void mainScreen_MAIN()
 	//0. init screen	
 	today = return_today();
 	init_mainScreen(&year, &year_and_month, &date, &today);
-	
+
 	while (1) {
 		//1. print linked list
 		index = print_Brief_list(year, year_and_month);
 
 		//2. get input of user
-		switch(input = getchar())
+		while (1)
 		{
-		case 'a': //<---move to prev page of list
-				if (head != NULL && isHead != head)//if its not null list & front page
-					isHead = move_Brief_list(0,index);	
-				break;
-
-		case 'd': //--->move to next page of list
-				if (head != NULL && current->next != NULL) //if list is not end
-					move_Brief_list(1,index);
-				break;
-
-		case '1': //---	Menu [1] : move to add schedule screen 
+			input = getchar();
+			if (input == 'a') { //<---move to prev page of list
+				if (head != NULL) {//if its not null list
+					isHead = move_Brief_list(0, index);
+					if (isHead == head) { // if ishead is head, program should not print brief list again.
+						continue;
+					}
+					else { //print the list.
+						break;
+					}
+				}
+				else { //head is null.
+					continue;
+				}
+			}
+			else if (input == 'd') { //--->move to next page of list
+				if (head != NULL && current->next != NULL) {//if list is not end
+					move_Brief_list(1, index);
+					break;
+				}
+				else if (current->next == NULL) // if current->next is null, program should not print brief list again.
+					continue;
+			}
+			else if (input == '1') { //---	Menu [1] : move to add schedule screen 
 				addSchedule_MAIN();
 				init_mainScreen(&year, &year_and_month, &date, &today);
 				break;
-			
-		case '2'://---	Menu [2] : view detail of 1 schedule
+			}
+			else if (input == '2') { //---	Menu [2] : view detail of 1 schedule
 				viewDetail_MAIN(index, year, year_and_month);
 				init_mainScreen(&year, &year_and_month, &date, &today);
 				break;
-
-		case '3': //---	Menu [3] : search schedule
-				move(10, 42);
+			}
+			else if (input == '3') { //---	Menu [3] : search schedule
+				move(11, 53);
 				echo();
 				scanw("%d", &today);
 				noecho();
-				move(10, 42);
+				move(11, 53);
 				addstr("         ");
 
 				init_mainScreen(&year, &year_and_month, &date, &today);
 				break;
-
-		case '4': //---	Menu [4] : send callout
+			}
+			else if (input == '4') { //---	Menu [4] : send callout
 				callOut_MAIN();
 				init_mainScreen(&year, &year_and_month, &date, &today);
 				break;
-
-		case '5': //---	Menu [5] : quit program
-				//NEED TO END SOCKET!! (CHILD P)
+			}
+			else if (input == '5') { //---	Menu [5] : quit program
+				  //NEED TO END SOCKET!! (CHILD P)
 				endwin();
 				exit(1);
+				break;
+			}
 		}
 	}
-	
+
 }
 
 //	- < init mainScreen upward part >
-void init_mainScreen(int* year, int* year_and_month, int* date,int* today)
+void init_mainScreen(int* year, int* year_and_month, int* date, int* today)
 {
 	clear();
 
 	return_today();
-	print_menu(); 
+	print_menu();
 
 	search_schedule(year, year_and_month, date, *today);
 
@@ -619,38 +636,33 @@ void search_schedule(int* year, int* year_and_month, int* date, int target) {
 
 	sprintf(filename, "../Data/ScheduleData/%d/%d_Schedule.txt", *year, *year_and_month); //make file path
 
-	//make Linked List
+																						  //make Linked List
 	head = make_schedulelist(0, filename, date);
 
 	return;
 }
 
 //	- < print brief list to main page>
-int print_Brief_list(int year,int year_and_month)
+int print_Brief_list(int year, int year_and_month)
 {
-	int i;
+	int i = 0;
 
 	if (head == NULL) {// if linked list is empty -> Print NO SCHEDULE
-		move(List_Yp_1, List_Xp);
-		addstr("\n        NO SCHEDULE        \n");
+		mvaddstr(List_Yp_2, List_Xp, "        NO SCHEDULE        \n");
 	}
-	else 
-		for ( i = 0; i < 3; i++) 
+	else
+		for (i = 0; i < 3; i++)
 		{
-			if (current != head && current->next == NULL)
-				break;
-			else if (current == head && i == 0) {
+			if (current == head && i == 0) { //special case. we want to print head.
 				printBrief3(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
-				
-				if (current->next == NULL) 
-					break;
-				
-				continue;
 			}
-			current = current->next;
-			printBrief3(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
+			else {
+				current = current->next;
+				printBrief3(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
+			}
+			if (current->next == NULL)
+				break;
 		}
-	
 	refresh();
 
 	return i;
@@ -664,32 +676,26 @@ nodeptr move_Brief_list(int how, int index)
 	if (how)// case 1. next page ->>>
 	{
 		clear_list_detail();
-
-		return NULL;
 	}
 	else//case 2. prev page <<<-
 	{
-		if (index != 1) 
-			index--;
-		
 		isHead = current;
-	
-		for (int j = 0; j < index; j++) 
-			isHead = isHead->pre;
-		
-		for (int j = 0; j < 3; j++) 
-			isHead = isHead->pre;
-		
-		if (isHead == head)
-			current = head;
-		else 
-			for (int j = 0; j < index + 3; j++) 
-				current = current->pre;
-			
-		clear_list_detail();
 
-		return isHead;
+		if (index == 3)
+			index--;
+
+		for (int j = 0; j < index; j++)
+			isHead = isHead->pre;
+
+		if (isHead == head)
+			return isHead;
+		else
+			for (int j = 0; j < index + 3; j++)
+				current = current->pre;
+
+		clear_list_detail();
 	}
+	return isHead;
 }
 
 //	< remove breif list >
@@ -698,29 +704,17 @@ void clear_list_detail() {
 
 	xp = List_Xp;
 	yp = List_Yp_1;
-	move(yp, xp);
-	addstr("                                                                                    ");
-	move(yp + 1, xp);
-	addstr("                                                                                    ");
-	move(yp + 2, xp);
-	addstr("                                                                                    ");
-	xp = List_Xp;
+	mvaddstr(yp,xp,"                                                                                    ");
+	mvaddstr(yp+1, xp, "                                                                                    ");
+	mvaddstr(yp+2, xp, "                                                                                    ");
 	yp = List_Yp_2;
-	move(yp, xp);
-	addstr("                                                                                    ");
-	move(yp + 1, xp);
-	addstr("                                                                                    ");
-	move(yp + 2, xp);
-	addstr("                                                                                    ");
-	xp = List_Xp;
+	mvaddstr(yp, xp, "                                                                                    ");
+	mvaddstr(yp + 1, xp, "                                                                                    ");
+	mvaddstr(yp + 2, xp, "                                                                                    ");
 	yp = List_Yp_3;
-	move(yp, xp);
-	addstr("                                                                                    ");
-	move(yp + 1, xp);
-	addstr("                                                                                    ");
-	move(yp + 2, xp);
-	addstr("                                                                                    ");
-
+	mvaddstr(yp, xp, "                                                                                    ");
+	mvaddstr(yp + 1, xp, "                                                                                    ");
+	mvaddstr(yp + 2, xp, "                                                                                    ");
 }
 
 //	< print 3 brief list >
@@ -786,20 +780,19 @@ void printBrief3(int order, int group, int year, int year_and_month) {
 //	< Print Today's Date >
 //	return today's date 
 //	Use header file time.h
-int return_today() 
+int return_today()
 {
 	struct tm* t = return_Time();
 	int today;
-	
+
 	today = (t->tm_year + 1900) * 100;
 	today = (today + (t->tm_mon + 1)) * 100;
 	today = (today + t->tm_mday);
 
-	move(1, 1);
-	addstr("*********************************************************\n");
-	addstr("                          Today                          \n");
-	printw("                         %d.%d.%d                        \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
-	addstr("*********************************************************\n");
+	mvaddstr(1, 10,"*********************************************************\n");
+	mvaddstr(2, 10, "                          Today                          \n");
+	mvprintw(3, 10, "                         %d.%d.%d                        \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
+	mvaddstr(4, 10, "*********************************************************\n");
 
 	return today;
 }
@@ -808,7 +801,7 @@ struct tm* return_Time(void)
 {
 	struct tm* t;
 	time_t timer;
-	
+
 	//change time to Korea's time
 	timer = time(NULL);
 	timer += TIMEOFFSET * 3600;
@@ -827,18 +820,19 @@ void smaller_than_ten(int target, char* targetstr)
 }
 
 void print_menu() {//print menu. Details of this function need to be modified.
-	move(5, 1);
-	addstr("*********************************************************\n");
-	addstr("1. Add Schedule.\n");
-	addstr("2. View Schedule Detail. \n   (Enter Schedule Number. Press Enter Key.)  :\n");
-	addstr("3. Search Schedule.\n   (Enter YYYYMMDD. Press Enter Key.)  :\n");
-	addstr("4. Call out\n");
-	addstr("5. Quit.\n");
-	addstr("*********************************************************\n");
+	mvaddstr(6, 10,"*********************************************************\n");
+	mvaddstr(7, 12, "1. Add Schedule.\n");
+	mvaddstr(8, 12, "2. View Schedule Detail. \n");
+	mvaddstr(9, 12, "  (Enter Schedule Number. Press Enter Key.)  :\n");
+	mvaddstr(10, 12, "3. Search Schedule.\n");
+	mvaddstr(11, 12, "  (Enter YYYYMMDD. Press Enter Key.)  :\n");
+	mvaddstr(12, 12, "4. Call out\n");
+	mvaddstr(13, 12, "5. Quit.\n");
+	mvaddstr(14, 10, "*********************************************************\n");
 	refresh();
 }
 
-struct node* make_newNode(int date, int start, int end, char* ID, char* permission, char* sname, char* filepath) 
+struct node* make_newNode(int date, int start, int end, char* ID, char* permission, char* sname, char* filepath)
 {
 	nodeptr newNode = (struct node*)malloc(sizeof(struct node));
 
@@ -915,15 +909,15 @@ struct node* make_schedulelist(int mode, char* filename, int* date) {
 }
 
 /*================================================= M [1] ADD NEW SCHEDULE ===================================================
-		GET USER'S SCHEDULE INPUT ->	SAVE DATA TO	1. DETAIL FILE	2. BRIEF FILE
+GET USER'S SCHEDULE INPUT ->	SAVE DATA TO	1. DETAIL FILE	2. BRIEF FILE
 ============================================================================================================================*/
 /*	* < print add schedule page >
-	process user's data and call filesave function
+process user's data and call filesave function
 */
 void addSchedule_MAIN()
 {
 	Schedule schedule_info;
-	
+
 	clear();
 
 	//print upward screen.
@@ -943,7 +937,7 @@ void addSchedule_MAIN()
 	refresh();
 
 	// get user's input & save data to file
-	save_newSfile( get_newSinput() );
+	save_newSfile(get_newSinput());
 
 }
 
@@ -1051,12 +1045,12 @@ Schedule get_newSinput()
 }
 
 /*	< save new schedule to file >
-	detail & brief file
+detail & brief file
 */
-void save_newSfile(Schedule schedule_info) 
+void save_newSfile(Schedule schedule_info)
 {/* Get current time */
-	//FILE* brief_file;
-	//nodeptr newnode;
+ //FILE* brief_file;
+ //nodeptr newnode;
 	struct tm* t = return_Time();
 	int year, mon, day, now;
 	int schedule_year, schedule_year_and_month, date;
@@ -1079,9 +1073,9 @@ void save_newSfile(Schedule schedule_info)
 	smaller_than_ten(mon, mon_c);
 	smaller_than_ten(day, day_c);
 
-	if (now < 100000) 
+	if (now < 100000)
 		sprintf(now_c, "0%d", now);
-	else 
+	else
 		sprintf(now_c, "%d", now);
 
 	sprintf(detail_file_path, "../Data/ScheduleData/%d/%s/%s_%d%s%s%s.txt", year, mon_c, userID, year, mon_c, day_c, now_c);
@@ -1156,7 +1150,7 @@ void add_file(node* insert)
 }
 
 //	< save brief file at correct path >
-void save_brief_file(char* tempfilename) 
+void save_brief_file(char* tempfilename)
 {
 	FILE* f = NULL;
 	nodeptr cur = NULL;
@@ -1177,28 +1171,32 @@ void save_brief_file(char* tempfilename)
 
 
 /*============================================== M [2] PRINT DETAIL OF SCHEDULE ==============================================
-		1. SEE DATAIL OF FILE
-		2. DELETE SCHEDULE FILE
+1. SEE DATAIL OF FILE
+2. DELETE SCHEDULE FILE
 ============================================================================================================================*/
 
 //	* < print detail data of schedule >
-void viewDetail_MAIN(int index,int year,int year_and_month)
+void viewDetail_MAIN(int index, int year, int year_and_month)
 {
 	char tempfilename[100];
 	nodeptr choiceptr = NULL;
 	int choice;
 
-	move(8, 50);
+	move(9, 60);
 	echo();
 	scanw("%d", &choice);
 	noecho();
-	move(8, 50);
+	move(9, 60);
 	addstr("    ");
+
+	if (index != 3) {
+		index++;
+	}
 
 	choiceptr = current;
 	for (int j = index; j > choice; j--) //calculate file path
 		choiceptr = choiceptr->pre;
-	
+
 	//make total linked list to delete files.
 	sprintf(tempfilename, "../Data/ScheduleData/%d/%d_Schedule.txt", year, year_and_month); //make file path
 	totalhead = make_schedulelist(1, tempfilename, 0);
@@ -1270,7 +1268,7 @@ void read_file(char* filepath) {
 }
 
 //delete file from brief list and data system.
-void del_file(char* filepath) 
+void del_file(char* filepath)
 {
 	nodeptr cur = NULL, prev = NULL;
 
@@ -1303,34 +1301,33 @@ void del_file(char* filepath)
 
 
 /*============================================== M [4] CALL OUT OTHER USER ==================================================
-		1. SEE DATAIL OF FILE
-		2. DELETE SCHEDULE FILE
+	SEND MY NAME TO OTHER USER'S SERVER 
+	-> SERVER SEND SIGUSR1 & NAME TO PARENT PROCESS 
+	-> SAVE NAME & SET ALRM TO PRINT STANDOUT
+	-> SIGALRM HANDLER PRINT CALLOUT
 ============================================================================================================================*/
 /*	<CALLOUT other user>
-  make active socket
-  send callout message
+make active socket
+send callout message
 */
 void callOut_MAIN(void)
 {
 	int pnum;		//portnum of receiver
 	char to[20];		//Name of message receiver
-	char m_context[100];	//context of message
-	time_t msendTime;	//sending time of message
-	char fullmessage[150];
 	char answer;		//answer of (y/n) question
 
 	signal(SIGIO, SIG_IGN);	//ignore sigio
 
 	clear();
-	mvaddstr(0, 0, "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.");
-	mvaddstr(1, 0, "      LETS CALL OUT FELLOW  |  input 'quit' if you want to quit         ");
-	mvaddstr(2, 0, "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.");
-	mvaddstr(3, 0, "              please  input name of fellow to call out                  ");
+	mvaddstr(0, 10, "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.");
+	mvaddstr(1, 10, "      LETS CALL OUT FELLOW  |  input 'quit' if you want to quit         ");
+	mvaddstr(2, 10, "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.");
+	mvaddstr(3, 10, "              please  input name of fellow to call out                  ");
 
 	//1. get receiver's Name
 	while (1)
 	{
-		mvaddstr(8, 0, "      To : ");	refresh();	scanw("%s", to);
+		mvaddstr(8, 10, "                To :   ");	refresh();	scanw("%s", to);
 
 		//check quit sign
 		if (strcmp("quit", to) == 0)
@@ -1351,8 +1348,8 @@ void callOut_MAIN(void)
 	//2. get final answer 
 	while (1)
 	{
-		mvprintw(11, 0, "         WILL YOU SEND MESSAGE TO ' %s ' ? (y/n)     ", to);
-		mvaddstr(12, 0, "                                 : "); refresh();
+		mvprintw(11, 0, "               WILL YOU SEND CALLOUT TO  ' %s ' ? (y/n)     ", to);
+		mvaddstr(12, 0, "                              : "); refresh();
 		scanw("%c", &answer);
 
 		if (answer == 'n')
@@ -1362,6 +1359,7 @@ void callOut_MAIN(void)
 			struct sockaddr_in servadd;
 			struct hostent* hp;
 			int sock_id;
+			FILE * sock_fp;
 
 			//1. get a socket
 			sock_id = socket(AF_INET, SOCK_STREAM, 0);
@@ -1375,30 +1373,30 @@ void callOut_MAIN(void)
 			if (connect(sock_id, (struct sockaddr*) & servadd, sizeof(servadd)) != 0)
 			{
 				clear();
-				mvprintw(15, 0, "%s is OFFLINE NOW. TRY NEXT TIME", to);
+				mvprintw(15, 15, "%s is OFFLINE NOW. TRY NEXT TIME", to);
 				refresh();
 				sleep(3);
 				return;
 			}
 
 			//send message 
-			//sprintf(
+			sock_fp = fdopen(sock_id,"w");
 
-			write(sock_id, userData[thisUser_Index].Name, sizeof(userData[thisUser_Index].Name));
+			fprintf(sock_fp,"%s",userData[thisUser_Index].Name);
 			close(sock_id);
 
 			clear();
-			mvaddstr(14, 0, "+-+-+-+-+-+-+                                                                 ");
-			mvprintw(15, 0, "    YOUR CALLOUT TO %s IS SUCCESSFULLY SENDED. RETURN TO MAIN PAGE....      ", to);
-			mvaddstr(16, 0, "+                                                                +-+-+-+-+-+-+");
+			mvaddstr(14, 5, "+-+-+-+-+-+-+                                                                 ");
+			mvprintw(15, 5, "    YOUR CALLOUT TO %s IS SUCCESSFULLY SENDED. RETURN TO MAIN PAGE....      ", to);
+			mvaddstr(16, 5, "+                                                                +-+-+-+-+-+-+");
 			refresh();
 			sleep(3);
 			break;
 		}
 		else
 		{
-			mvaddstr(9, 0, "    !!   YOU SHOULD ANSWER  y or n. TRY AGAIN   !!");
-			mvaddstr(11, 0, "                                                            ");//remove answer
+			mvaddstr(9, 10, "    !!   YOU SHOULD ANSWER  y or n. TRY AGAIN   !!");
+			mvaddstr(11,10, "                                                            ");//remove answer
 		}
 	}
 
@@ -1406,7 +1404,7 @@ void callOut_MAIN(void)
 
 /*	< check valid name and return portNum >
 if name is not exist in User, return -1
- */
+*/
 int checkValidName(char* name)
 {
 	for (int i; i < userData_Size; i++)
@@ -1417,16 +1415,20 @@ int checkValidName(char* name)
 	return -1;
 }
 /*
-	< handler for signal SIGUSR1>
+< handler for signal SIGUSR1>
 if server get callout from other p,
 server send sigusr1
-	-get callout from pipe
-	-set alarm for print callout
+-get callout from pipe
+-set alarm for print callout
 */
 void callout_handler(int signum)
 {
+	FILE* pipefp = fdopen(thepipe[READ_END],"r");
+	char buffer[20];
+
 	//read callout from pipe
-	read(thepipe[READ_END], callout, sizeof(callout));
+	fscanf(pipefp,"%s",buffer);
+	strcpy(callout,buffer);
 
 	set_ticker(2000);
 }
@@ -1449,22 +1451,29 @@ int set_ticker(int n_msecs)
 }
 
 /*	< handler for signal SIGALRM >
-	-print callout from other user 
-	-recur standout/standend *10
- */
+-print callout from other user
+-recur standout/standend *10
+*/
 void calloutPrint_handler(int signum)
 {
+	int y,x;
+
+	//save cursor
+	getyx(curscr,y,x);
+
 	if (printcounter % 2 == 0)
 		standout();
 
 	mvprintw(LINES - 3, 5, "^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^");
-	mvprintw(LINES - 2, 5, "!!!     [%5s] IS CALLING YOU NOW      !!!", callout);
+	mvprintw(LINES - 2, 5, "!!!   [%s] IS CALLING YOU NOW           !!!",callout);
 	mvprintw(LINES - 1, 5, "v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v");
 
 
 	if (printcounter % 2 == 0)
 		standend();
+	move(x,y);
 	refresh();
+
 
 	if (printcounter++ == 10)
 	{
@@ -1478,19 +1487,27 @@ void calloutPrint_handler(int signum)
 		alarm(0);	//turn off alarm
 		printcounter = 1;
 	}
+
+	move(x,y);
+	refresh();
 }
 
 /*	< server socket >
- recieve message from other client
- and save message data in file
+-recieve message from other client
+-message data in file
 */
-void server(void)//********************************************************************
+void server(void)
 {
+ 
+	FILE * sock_fp,*pipe_fp;	//active socket & pipe file pointer
 	int serversock_id, sock_fd;	//server socket's fd , active sicket's fd
 	struct sockaddr_in server_add;
 	struct hostent* hp;
-	char call_from[20];	//buffer to receive message
+	char buffer[20];	//buffer to receive message
 	int myport = userData[thisUser_Index].portNum;
+
+	//0. open fp to parent process
+	pipe_fp = fdopen(thepipe[WRITE_END],"w");
 
 	//1. get a socket
 	serversock_id = socket(AF_INET, SOCK_STREAM, 0);
@@ -1499,6 +1516,7 @@ void server(void)//*************************************************************
 	bzero(&server_add, sizeof(server_add));	//init server address structure
 	hp = gethostbyname(HOSTNAME);			//get host ip
 
+		
 	//3. fill in socket address structure & bind
 	bcopy((void*)hp->h_addr, (void*)&server_add.sin_addr, hp->h_length);
 	server_add.sin_port = htons(myport);
@@ -1514,16 +1532,19 @@ void server(void)//*************************************************************
 	{
 		//!connect
 		sock_fd = accept(serversock_id, NULL, NULL);
+		//sock_fp = fdopen(sock_fd,"r");
 
 		//we should recieve message(read)
-		read(sock_fd, call_from, sizeof(call_from));	//get message from client
+		//fscanf(sock_fp,"%s",buffer);	//get message from client
+		
+		read(sock_fd,buffer,sizeof(buffer));
 
 		//signal to parent process to send message
 		kill(parent_pid, SIGUSR1);
-		write(thepipe[WRITE_END], call_from, sizeof(call_from));
+
+		fprintf(pipe_fp,"%s",buffer);
 
 	}
-
 
 }
 
