@@ -16,7 +16,12 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netdb.h>
+#include <pthread.h>
 #include "MOYEORA_header.h"
+
+void clear_time();
+void *print_time(void *a);
+pthread_mutex_t cursor_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /*==================================================** MAIN **==============================================================
 > MULTI PROCESS
@@ -469,9 +474,12 @@ void mainScreen_MAIN()
 	int year, year_and_month, date, today, index;
 	char input;
 	nodeptr isHead = NULL;
+	pthread_t timer;
 
 	//0. init screen	
 	today = return_today();
+	pthread_create(&timer, NULL, print_time, NULL);
+
 	init_mainScreen(&year, &year_and_month, &date, &today);
 
 	while (1) {
@@ -490,8 +498,8 @@ void mainScreen_MAIN()
 					}
 					else { //print the list.
 						break;
-					}					
-				} 
+					}
+				}
 				else { //head is null.
 					continue;
 				}
@@ -502,7 +510,7 @@ void mainScreen_MAIN()
 					break;
 				}
 				else if (current->next == NULL) // if current->next is null, program should not print brief list again.
-					continue;				
+					continue;
 			}
 			else if (input == '1') { //---	Menu [1] : move to add schedule screen 
 				addSchedule_MAIN();
@@ -515,12 +523,14 @@ void mainScreen_MAIN()
 				break;
 			}
 			else if (input == '3') { //---	Menu [3] : search schedule
+				pthread_mutex_lock(&cursor_lock);
 				move(10, 42);
 				echo();
 				scanw("%d", &today);
 				noecho();
 				move(10, 42);
 				addstr("         ");
+				pthread_mutex_unlock(&cursor_lock);
 
 				init_mainScreen(&year, &year_and_month, &date, &today);
 				break;
@@ -581,14 +591,14 @@ void search_schedule(int* year, int* year_and_month, int* date, int target) {
 //	- < print brief list to main page>
 int print_Brief_list(int year, int year_and_month)
 {
-	int i=0;
-
+	int i = 0;
+	pthread_mutex_lock(&cursor_lock);
 	if (head == NULL) {// if linked list is empty -> Print NO SCHEDULE
 		move(List_Yp_1, List_Xp);
 		addstr("\n        NO SCHEDULE        \n");
 	}
 	else
-		for(i = 0; i < 3; i++)
+		for (i = 0; i < 3; i++)
 		{
 			if (current == head && i == 0) { //special case. we want to print head.
 				printBrief3(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
@@ -600,6 +610,7 @@ int print_Brief_list(int year, int year_and_month)
 			if (current->next == NULL)
 				break;
 		}
+	pthread_mutex_unlock(&cursor_lock);
 	refresh();
 
 	return i;
@@ -626,7 +637,7 @@ nodeptr move_Brief_list(int how, int index)
 
 		if (isHead == head)
 			return isHead;
-		else 
+		else
 			for (int j = 0; j < index + 3; j++)
 				current = current->pre;
 
@@ -638,7 +649,7 @@ nodeptr move_Brief_list(int how, int index)
 //	< remove breif list >
 void clear_list_detail() {
 	int xp, yp;
-
+	pthread_mutex_lock(&cursor_lock);
 	xp = List_Xp;
 	yp = List_Yp_1;
 	move(yp, xp);
@@ -663,7 +674,7 @@ void clear_list_detail() {
 	addstr("                                                                                    ");
 	move(yp + 2, xp);
 	addstr("                                                                                    ");
-
+	pthread_mutex_unlock(&cursor_lock);
 }
 
 //	< print 3 brief list >
@@ -707,6 +718,7 @@ void printBrief3(int order, int group, int year, int year_and_month) {
 	smaller_than_ten(nend_time, end_time);
 	smaller_than_ten(nend_min, end_min);
 
+	pthread_mutex_lock(&cursor_lock);
 	if (strcmp(userData[thisUser_Index].ID, current->userID) != 0) { //search name
 		for (i = 0; i < userData_Size; i++) {
 			if (strcmp(userData[i].ID, current->userID) == 0) {
@@ -723,6 +735,7 @@ void printBrief3(int order, int group, int year, int year_and_month) {
 	printw("%d.%d.%d  %s:%s ~ %s:%s\n", year, year_and_month - (year * 100), current->date, start_time, start_min, end_time, end_min);
 	move(yp + 2, xp);
 	printw("%s\n", current->scheduleName);
+	pthread_mutex_unlock(&cursor_lock);
 	return;
 }
 
@@ -738,13 +751,34 @@ int return_today()
 	today = (today + (t->tm_mon + 1)) * 100;
 	today = (today + t->tm_mday);
 
-	move(1, 1);
-	addstr("*********************************************************\n");
-	addstr("                          Today                          \n");
-	printw("                         %d.%d.%d                        \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
-	addstr("*********************************************************\n");
-
 	return today;
+}
+
+void *print_time(void *a) {
+	struct tm *t = return_Time();
+
+	while (1) {
+		//clear screen and print Today's date.
+		pthread_mutex_lock(&cursor_lock);
+		clear_time();
+		move(1, 1);
+		addstr("*********************************************************\n");
+		addstr("                          Today                          \n");
+		printw("                    %d.%d.%d %d:%d:%d                    \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+		addstr("*********************************************************\n");
+		pthread_mutex_unlock(&cursor_lock);
+		refresh();
+		sleep(1);
+	}
+	return NULL;
+}
+
+void clear_time() {
+	move(1, 1);
+	addstr("                                                         \n");
+	addstr("                                                         \n");
+	printw("                                                         \n");
+	addstr("                                                         \n");
 }
 
 struct tm* return_Time(void)
@@ -770,6 +804,7 @@ void smaller_than_ten(int target, char* targetstr)
 }
 
 void print_menu() {//print menu. Details of this function need to be modified.
+	pthread_mutex_lock(&cursor_lock);
 	move(5, 1);
 	addstr("*********************************************************\n");
 	addstr("1. Add Schedule.\n");
@@ -778,6 +813,7 @@ void print_menu() {//print menu. Details of this function need to be modified.
 	addstr("4. Call out\n");
 	addstr("5. Quit.\n");
 	addstr("*********************************************************\n");
+	pthread_mutex_unlock(&cursor_lock);
 	refresh();
 }
 
@@ -1131,12 +1167,14 @@ void viewDetail_MAIN(int index, int year, int year_and_month)
 	nodeptr choiceptr = NULL;
 	int choice;
 
+	pthread_mutex_lock(&cursor_lock);
 	move(8, 50);
 	echo();
 	scanw("%d", &choice);
 	noecho();
 	move(8, 50);
 	addstr("    ");
+	pthread_mutex_unlock(&cursor_lock);
 
 	if (index != 3) {
 		index++;
@@ -1401,6 +1439,7 @@ int set_ticker(int n_msecs)
 */
 void calloutPrint_handler(int signum)
 {
+	pthread_mutex_lock(&cursor_lock);
 	if (printcounter % 2 == 0)
 		standout();
 
@@ -1425,6 +1464,7 @@ void calloutPrint_handler(int signum)
 		alarm(0);	//turn off alarm
 		printcounter = 1;
 	}
+	pthread_mutex_unlock(&cursor_lock);
 }
 
 /*	< server socket >
@@ -1468,9 +1508,5 @@ void server(void)//*************************************************************
 														//signal to parent process to send message
 		kill(parent_pid, SIGUSR1);
 		write(thepipe[WRITE_END], call_from, sizeof(call_from));
-
 	}
-
-
 }
-

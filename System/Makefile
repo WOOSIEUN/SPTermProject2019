@@ -1,4 +1,4 @@
-LIBS = -lcurses
+LIBS = -lcurses -lpthread
 CC = gcc
 
 moyeora :
