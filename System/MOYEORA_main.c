@@ -489,7 +489,9 @@ void mainScreen_MAIN()
 		//2. get input of user
 		while (1)
 		{
+			pthread_mutex_lock(&cursor_lock);
 			input = getchar();
+			pthread_mutex_unlock(&cursor_lock);
 			if (input == 'a') { //<---move to prev page of list
 				if (head != NULL) {//if its not null list
 					isHead = move_Brief_list(0, index);
