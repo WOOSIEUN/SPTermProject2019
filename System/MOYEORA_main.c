@@ -490,8 +490,8 @@ void mainScreen_MAIN()
 					}
 					else { //print the list.
 						break;
-					}					
-				} 
+					}
+				}
 				else { //head is null.
 					continue;
 				}
@@ -502,7 +502,7 @@ void mainScreen_MAIN()
 					break;
 				}
 				else if (current->next == NULL) // if current->next is null, program should not print brief list again.
-					continue;				
+					continue;
 			}
 			else if (input == '1') { //---	Menu [1] : move to add schedule screen 
 				addSchedule_MAIN();
@@ -515,11 +515,11 @@ void mainScreen_MAIN()
 				break;
 			}
 			else if (input == '3') { //---	Menu [3] : search schedule
-				move(10, 42);
+				move(11, 53);
 				echo();
 				scanw("%d", &today);
 				noecho();
-				move(10, 42);
+				move(11, 53);
 				addstr("         ");
 
 				init_mainScreen(&year, &year_and_month, &date, &today);
@@ -581,14 +581,13 @@ void search_schedule(int* year, int* year_and_month, int* date, int target) {
 //	- < print brief list to main page>
 int print_Brief_list(int year, int year_and_month)
 {
-	int i=0;
+	int i = 0;
 
 	if (head == NULL) {// if linked list is empty -> Print NO SCHEDULE
-		move(List_Yp_1, List_Xp);
-		addstr("\n        NO SCHEDULE        \n");
+		mvaddstr(List_Yp_2, List_Xp, "        NO SCHEDULE        \n");
 	}
 	else
-		for(i = 0; i < 3; i++)
+		for (i = 0; i < 3; i++)
 		{
 			if (current == head && i == 0) { //special case. we want to print head.
 				printBrief3(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
@@ -626,7 +625,7 @@ nodeptr move_Brief_list(int how, int index)
 
 		if (isHead == head)
 			return isHead;
-		else 
+		else
 			for (int j = 0; j < index + 3; j++)
 				current = current->pre;
 
@@ -641,29 +640,17 @@ void clear_list_detail() {
 
 	xp = List_Xp;
 	yp = List_Yp_1;
-	move(yp, xp);
-	addstr("                                                                                    ");
-	move(yp + 1, xp);
-	addstr("                                                                                    ");
-	move(yp + 2, xp);
-	addstr("                                                                                    ");
-	xp = List_Xp;
+	mvaddstr(yp,xp,"                                                                                    ");
+	mvaddstr(yp+1, xp, "                                                                                    ");
+	mvaddstr(yp+2, xp, "                                                                                    ");
 	yp = List_Yp_2;
-	move(yp, xp);
-	addstr("                                                                                    ");
-	move(yp + 1, xp);
-	addstr("                                                                                    ");
-	move(yp + 2, xp);
-	addstr("                                                                                    ");
-	xp = List_Xp;
+	mvaddstr(yp, xp, "                                                                                    ");
+	mvaddstr(yp + 1, xp, "                                                                                    ");
+	mvaddstr(yp + 2, xp, "                                                                                    ");
 	yp = List_Yp_3;
-	move(yp, xp);
-	addstr("                                                                                    ");
-	move(yp + 1, xp);
-	addstr("                                                                                    ");
-	move(yp + 2, xp);
-	addstr("                                                                                    ");
-
+	mvaddstr(yp, xp, "                                                                                    ");
+	mvaddstr(yp + 1, xp, "                                                                                    ");
+	mvaddstr(yp + 2, xp, "                                                                                    ");
 }
 
 //	< print 3 brief list >
@@ -738,11 +725,10 @@ int return_today()
 	today = (today + (t->tm_mon + 1)) * 100;
 	today = (today + t->tm_mday);
 
-	move(1, 1);
-	addstr("*********************************************************\n");
-	addstr("                          Today                          \n");
-	printw("                         %d.%d.%d                        \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
-	addstr("*********************************************************\n");
+	mvaddstr(1, 10,"*********************************************************\n");
+	mvaddstr(2, 10, "                          Today                          \n");
+	mvprintw(3, 10, "                         %d.%d.%d                        \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
+	mvaddstr(4, 10, "*********************************************************\n");
 
 	return today;
 }
@@ -770,14 +756,15 @@ void smaller_than_ten(int target, char* targetstr)
 }
 
 void print_menu() {//print menu. Details of this function need to be modified.
-	move(5, 1);
-	addstr("*********************************************************\n");
-	addstr("1. Add Schedule.\n");
-	addstr("2. View Schedule Detail. \n   (Enter Schedule Number. Press Enter Key.)  :\n");
-	addstr("3. Search Schedule.\n   (Enter YYYYMMDD. Press Enter Key.)  :\n");
-	addstr("4. Call out\n");
-	addstr("5. Quit.\n");
-	addstr("*********************************************************\n");
+	mvaddstr(6, 10,"*********************************************************\n");
+	mvaddstr(7, 12, "1. Add Schedule.\n");
+	mvaddstr(8, 12, "2. View Schedule Detail. \n");
+	mvaddstr(9, 12, "  (Enter Schedule Number. Press Enter Key.)  :\n");
+	mvaddstr(10, 12, "3. Search Schedule.\n");
+	mvaddstr(11, 12, "  (Enter YYYYMMDD. Press Enter Key.)  :\n");
+	mvaddstr(12, 12, "4. Call out\n");
+	mvaddstr(13, 12, "5. Quit.\n");
+	mvaddstr(14, 10, "*********************************************************\n");
 	refresh();
 }
 
@@ -1131,11 +1118,11 @@ void viewDetail_MAIN(int index, int year, int year_and_month)
 	nodeptr choiceptr = NULL;
 	int choice;
 
-	move(8, 50);
+	move(9, 60);
 	echo();
 	scanw("%d", &choice);
 	noecho();
-	move(8, 50);
+	move(9, 60);
 	addstr("    ");
 
 	if (index != 3) {
