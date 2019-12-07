@@ -120,15 +120,19 @@ void startScreen_MAIN()
 
 		clear();
 
-		mvaddstr(2, 18, "+-+-+-+-+-+-+-+-+-+-+");
-		mvaddstr(3, 18, "  M o  y e o  R a    ");
-		mvaddstr(4, 18, "   S C H E D U L E R ");
-		mvaddstr(5, 18, " +-+-+-+-+-+-+-+-+-+-+");
+		mvaddstr(2, 20 , "+-+-+-+-+-+-+-+-+-+-+");
+		mvaddstr(3, 20, "  M o  y e o  R a    ");
+		mvaddstr(4, 20, "   S C H E D U L E R ");
+		mvaddstr(5, 20, " +-+-+-+-+-+-+-+-+-+-+");
 
 		mvaddstr(7, 23, "   ^    :   w   ");
 		mvaddstr(8, 23, " < v >  : a s d ");
-		mvaddstr(9, 23, " select : enter ");
-		
+		mvaddstr(9, 23, " Select : enter ");
+
+
+		mvaddstr(12,10,"   PLEASE SELECT MENU FOR STARTING PROGRAM");
+		mvaddstr(13, 5,"= = = = = = = = = = = = = = = = = = = = = = = = = = = = = ");
+
 		if (start_choice)
 		{
 			mvaddstr(15, 23, "     LOG IN     ");   // choice (0)  default -> login 
@@ -143,7 +147,11 @@ void startScreen_MAIN()
 			standend();
 			mvaddstr(16, 23, "     SIGN IN    ");   // choice (1)
 		}
-
+		mvaddstr(19,20,"  - - - - - - - - -  ");
+		mvaddstr(20,20," |  MADE BY SISTERS |");
+		mvaddstr(21,20,"  - - - - - - - - -  ");
+		mvaddstr(22,20,"     2019. 12 . 08   ");		
+		move(LINES-1,COLS-1);
 		refresh();
 		pause();
 	}
@@ -183,26 +191,26 @@ int  log_In()
 
 	clear();
 
-	mvaddstr(0, 0, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-	mvaddstr(1, 0, "                   LOG IN                        ");
-	mvaddstr(2, 0, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-	mvaddstr(3, 0, "     input 'quit' : Return to Main Menu          ");
+	mvaddstr(2, 15, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+	mvaddstr(3, 15, "|                    LOG IN                     |");
+	mvaddstr(4, 15, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+	mvaddstr(5, 15, "      input 'quit' : Return to Main Menu         ");
 
 	signal(SIGIO, SIG_IGN);//-----set sigio ingnore!!
 
 						   //1. ID
 	while (1)
 	{
-		mvaddstr(4, 0, "              1. input your ID                   ");
-		mvaddstr(5, 0, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+		mvaddstr(7, 15, "              1. input your ID                   ");
+		mvaddstr(8, 15, "- - - - - - - - - - - - - - - - - - - - - - - - -");
 
-		mvaddstr(9, 0, "            ID :");
+		mvaddstr(13, 15, "            ID :   ");
 		refresh();
 		scanw("%s", ID_input);
 
 		if (strcmp(ID_input, QUIT_SIGN) == 0)//if user typed 'quit' -> return to main menu
 		{
-			mvaddstr(13, 0, "             RETURN TO START PAGE....");
+			mvaddstr(13, 15, "      <<  RETURN TO START PAGE.... >>         ");
 			refresh();
 			sleep(3);
 
@@ -210,26 +218,34 @@ int  log_In()
 		}
 		else if ((userIndex = find_LoginUser(ID_input)) < 0)//if id is not valid
 		{
-			mvaddstr(6, 0, "  !!   ID IS NOT VALID. TRY AGAIN   !!");
-			mvaddstr(9, 16, "                                    ");//remove input
+			mvaddstr(10,15, "                >> WARNING<<              ");
+			mvaddstr(11,15, "      !!   ID IS NOT VALID. TRY AGAIN   !!");
+			mvaddstr(13,34, "                                      ");//remove input
 		}
 		else
 			break;
+
 	}
+	//remove warinings
+	mvaddstr(10,15,"                                                    ");
+	mvaddstr(11,15,"                                                    ");
 
 	//2. PW
 	while (1)
 	{
-		mvaddstr(4, 0, "              2. input your PW                   ");
-		mvaddstr(5, 0, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+		mvaddstr(7, 15, "              2. input your PW                   ");
+		mvaddstr(8, 15, "- - - - - - - - - - - - - - - - - - - - - - - - -");
 
-		mvaddstr(11, 0, "            PW :");
+		mvaddstr(15, 15, "            PW :   ");
 		refresh();
+		
+		noecho();
 		scanw("%s", PW_input);
+		echo();
 
 		if (strcmp(PW_input, QUIT_SIGN) == 0)
 		{
-			mvaddstr(13, 0, "             RETURN TO START PAGE....");
+			mvaddstr(17, 15, "     <<  RETURN TO START PAGE.... >>        ");
 			refresh();
 			sleep(3);
 
@@ -237,23 +253,37 @@ int  log_In()
 		}
 		else if (strcmp(userData[userIndex].PW, PW_input) != 0)
 		{
-			mvaddstr(6, 0, "  !!   PW IS NOT VALID. TRY AGAIN   !!");
-			mvaddstr(11, 16, "                                    ");//remove input
+			mvaddstr(10,15, "                >> WARNING<<              ");
+			mvaddstr(11,15, "      !!   PW IS NOT VALID. TRY AGAIN   !!");
+			mvaddstr(15,34, "                                      ");//remove input
 
 		}
 		else
 			break;
 	}
-
-
+	
 	//3. save user index
 	thisUser_Index = userIndex;
-
-	//4. welcome sign ( login successed ) 
-	mvaddstr(13, 0, "             LOG IN SUCCESSED");
-	mvprintw(14, 0, "           WELCOME %s  . . .", userData[thisUser_Index].Name);
+	
+	//4. welcome sign ( login successed )
+	mvaddstr(10,15,"                                                    ");
+	mvaddstr(11,15,"          =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-            ");
+	mvaddstr(12,15,"                LOG IN SUCCESSED                    "); 
+	mvprintw(13,15,"              WELCOME AGAIN [  %s  ]                ", userData[thisUser_Index].Name);
+	mvaddstr(14,15,"                  .    .    .                       ");
+	mvaddstr(15,15,"           NOW TURN INTO MAIN SCREEN                ");
+	mvaddstr(16,15,"          =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-            ");
 	refresh();
-	sleep(5);
+	
+	//countdown for next screen
+	for(int i =3,j=26 ; i>0 ; i--,j +=7)
+	{
+		mvprintw(18,j,"%3d..",i);
+		refresh();
+
+		sleep(1);
+	}
+
 	return 1;
 
 }
@@ -282,85 +312,88 @@ int sign_In(void)
 	char buffer[100];   //buffer to get user input
 
 	user newUser;
-	int index = 12; //input start position
+	int index = 15; //input start position
 
 	signal(SIGIO, SIG_IGN);//-----set sigio ingnore!!
 
 	clear();
 	//default page
-	mvaddstr(0, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
-	mvaddstr(1, 0, "|                  Sign In                    |");
-	mvaddstr(2, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
-	mvaddstr(3, 0, "|  if you want to return to Main page,        |");
-	mvaddstr(4, 0, "|                    please input 'quit'      |");
-	mvaddstr(5, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
+	mvaddstr(2, 15, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+	mvaddstr(3, 15, "|                    Sign In                    |");
+	mvaddstr(4, 15, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+	mvaddstr(5, 15, "|      if you want to return to Main page,      |");
+	mvaddstr(6, 15, "|              please input 'quit'              |");
+	mvaddstr(7, 15, "- - - - - - - - - - - - - - - - - - - - - - - - -");
 
 	//1. ID
-	mvaddstr(6, 0, "|             1. Input your ID                |");
-	mvaddstr(7, 0, "|  [  engligh + num ,   5  < length < 10   ]  |");
-	mvaddstr(8, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
+	mvaddstr(9, 15, "               1. Input your ID                  ");
+	mvaddstr(10,15, "    [  engligh + num ,   5  < length < 10   ]    ");
 
-	mvaddstr(index, 0, "           ID :");
+	mvaddstr(index, 15, "           ID :   ");
 	if (signIn_Check(5, 10, index, buffer, "ID") == 0)
 		return 0;
 	strcpy(newUser.ID, buffer);
 	index += 2;
 	//remove warning
-	mvprintw(9, 0, "                                                        ");
+	mvprintw(12, 15, "                                                        ");
+	mvprintw(13, 15, "                                                        ");
 
 	//2. PW
-	mvaddstr(6, 0, "|             2. Input your PW                |");
-	mvaddstr(7, 0, "|  [  engligh + num ,   5  < length < 10   ]  |");
-	mvaddstr(8, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
+	mvaddstr(9, 15, "               2. Input your PW                 ");
 
-	mvaddstr(index, 0, "           PW :");
+	mvaddstr(index, 15, "           PW :   ");
 	if (signIn_Check(5, 10, index, buffer, "PW") == 0)
 		return 0;
 	strcpy(newUser.PW, buffer);
 	index += 2;
 	//remove warning
-	mvprintw(9, 0, "                                                        ");
-
+	mvprintw(12, 15, "                                                                   ");
+	mvprintw(12, 15, "                                                                   ");
 
 	//3. NAME
-	mvaddstr(6, 0, "|           3. Input your Name                |");
-	mvaddstr(7, 0, "|      [  engligh  ,   1< length < 10   ]     |");
-	mvaddstr(8, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
+	mvaddstr(9 ,15, "               3. Input your Name                 ");
+	mvaddstr(10,15, "       [  engligh   ,   1 <  length < 10   ]      ");
 
-	mvaddstr(index, 0, "         NAME :");
-	if (signIn_Check(1, 10, index, buffer, "NAME") == 0)
+	mvaddstr(index, 15, "         NAME :");
+	if (signIn_Check(1, 10, index, buffer, "Name") == 0)
 		return 0;
 	strcpy(newUser.Name, buffer);
 	index += 2;
 	//remove warning
-	mvprintw(9, 0, "                                                        ");
+	mvprintw(12, 15, "                                                                    ");
+	mvprintw(13, 15, "                                                                    ");
 
-	mvprintw(7, 0, "                                                        ");
 	//4. isMaster
-	mvaddstr(6, 0, "|           4. Are you MASTER?                |");
-	mvaddstr(7, 0, "|                  [ y/n ]                    |");
-	mvaddstr(8, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
-	mvaddstr(index, 0, "      MASTER? :");
+	mvaddstr(9 ,15, "               4. Are you MASTER?                ");
+	mvaddstr(10,15, "                      [ y/n ]                    ");
+	mvaddstr(index, 15, "      MASTER? :   ");
 	refresh();
 
 	while (1)
 	{
 		char c;
-		mvscanw(index, 15, "%c", &c);
+		mvscanw(index, 33, "%c", &c);
 
 		if (c == 'y')//Master -> get Master Code
 		{
 			int mcode;
 
-			mvaddstr(index + 1, 0, "   MASTER CODE:");
+			mvaddstr(index + 2, 15, "            -=-=-=-=-=-=-=-=-=-=-=-   ");
+			mvaddstr(index + 3, 15, "           |    ? MASTER CODE ?    |  ");
+			mvaddstr(index + 4, 15, "           |      :                |  ");
+			mvaddstr(index + 5, 15, "            -=-=-=-=-=-=-=-=-=-=-=-   ");
+			move(index+4,36);
 			refresh();
-			mvscanw(index + 1, 15, "%d", &mcode);
+			scanw( "%d", &mcode);
 
 			if (mcode != MCODE)//if user input wrong code -> return to main page
 			{
-				mvaddstr(index + 3, 0, "      !!       YOUR MCODE IS WRONG. RETURN TO MAIN PAGE . . .");
+				mvaddstr(index+2,15,"                          >> WARNING <<                                      ");
+				mvaddstr(index+3,15,"                  !!    YOUR MCODE IS WRONG     !!                           ");
+				mvaddstr(index+4,15,"                      ..RETURN TO MAIN PAGE..                                ");
+				mvaddstr(index+5,15,"                                                                             ");
 				refresh();
-				sleep(5);
+				sleep(3);
 
 				return 0;
 			}
@@ -374,19 +407,47 @@ int sign_In(void)
 			break;
 		}
 
-		mvprintw(9, 0, "   !!    YOUR ANSWER SHOULD BE 'y' OR 'n' !!  TRY AGAIN  ");
+		mvprintw(12, 15, "                   >> WARNING <<                       ");
+		mvprintw(13, 15, "  !!  YOUR ANSWER SHOULD BE 'y' OR 'n' !!  TRY AGAIN   ");
 
 	}
 
 	userData[++userData_Size] = newUser;
 	sprintf(fullStatus, "%s %s %s %d", userData[userData_Size].ID, userData[userData_Size].PW, userData[userData_Size].Name, userData[userData_Size].isMaster);
 	fprintf(userData_file, "%s\n", fullStatus);
+	
 
-	mvprintw(22, 0, "                 YOUR SIGN IN IS DONE. TRY LOGIN ");
-	mvprintw(23, 0, "                             -> LETS GO TO LOGIN PAGE. . . . .");
+	mvaddstr( 8,15,"                                                    ");
+	mvaddstr( 9,15,"                                                    ");
+	mvaddstr(10,15,"                                                    ");
+	mvaddstr(11,15,"                                                    ");
+	mvaddstr(12,15,"                                                    ");
+        mvaddstr(13,15,"          =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-            ");
+        mvaddstr(14,15,"                SIGN IN SUCCESSED                   ");
+        mvprintw(15,15,"                WELCOME  [  %s  ]                   ", newUser.Name);
+        mvaddstr(16,15,"                  .    .    .                       ");
+        mvaddstr(17,15,"           NOW TURN INTO LOG IN SCREEN              ");
+        mvaddstr(18,15,"          =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-            ");
+	mvaddstr(19,15,"                                                    ");
+	mvaddstr(20,15,"                                                    ");
+	mvaddstr(21,15,"                                                    ");
+	mvaddstr(22,15,"                                                    ");
+	mvaddstr(23,15,"                                                    ");
+	mvaddstr(24,15,"                                                    ");
+	mvaddstr(25,15,"                                                    ");
+	mvaddstr(26,15,"                                                    ");
+
 	refresh();
 
-	sleep(5);
+	 //countdown for next screen
+        for(int i =3,j=26 ; i>0 ; i--,j +=7)
+        {
+               mvprintw(20,j,"%3d..",i);
+               refresh();
+
+               sleep(1);
+        }
+
 
 	fclose(userData_file);
 
@@ -404,22 +465,23 @@ int signIn_Check(int minLen, int maxLen, int index, char* buffer, char* label)
 	{
 		refresh();
 
-		mvscanw(index, 15, "%s", buffer);
+		mvscanw(index, 33, "%s", buffer);
 
 		if (strcmp(QUIT_SIGN, buffer) == 0)//1. quit check  
 			return 0;//->quit
 		else if (strlen(buffer) < minLen || strlen(buffer) > maxLen)//2. length check
 		{
-			mvprintw(9, 0, "   !!   YOUR %s SHOULD BE IN %d~%d LENGTH !!  TRY AGAIN  ", label, minLen, maxLen);
+			mvprintw(12, 15, "                   >> WARNING <<                     ");
+			mvprintw(13, 15, " !! YOUR %s SHOULD BE IN %d~%d LENGTH !!  TRY AGAIN  ", label, minLen, maxLen);
 			//remove input
-			mvprintw(index, 15, "                                                      ");
+			mvprintw(index, 33, "                                                      ");
 		}
-		else if (dup_Check(label, buffer))//3. duplication check
+		else if (dup_Check(label, buffer) && strcmp("PW",label))//3. duplication check
 		{
-
-			mvprintw(9, 0, "   !!  THIS %s IS ALREADY EXIST !!  TRY AGAIN  ", label, minLen, maxLen);
+			mvprintw(12, 15, "                   >> WARNING <<                     ");
+			mvprintw(13, 15, "      !! THIS %s IS ALREADY EXIST !!  TRY AGAIN  ", label, minLen, maxLen);
 			//remove input
-			mvprintw(index, 15, "                                                      ");
+			mvprintw(index, 33, "                                                      ");
 		}
 		else
 			return 1;
