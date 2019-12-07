@@ -490,8 +490,8 @@ void mainScreen_MAIN()
 					}
 					else { //print the list.
 						break;
-					}					
-				} 
+					}
+				}
 				else { //head is null.
 					continue;
 				}
@@ -502,7 +502,7 @@ void mainScreen_MAIN()
 					break;
 				}
 				else if (current->next == NULL) // if current->next is null, program should not print brief list again.
-					continue;				
+					continue;
 			}
 			else if (input == '1') { //---	Menu [1] : move to add schedule screen 
 				addSchedule_MAIN();
@@ -515,11 +515,11 @@ void mainScreen_MAIN()
 				break;
 			}
 			else if (input == '3') { //---	Menu [3] : search schedule
-				move(10, 42);
+				move(11, 53);
 				echo();
 				scanw("%d", &today);
 				noecho();
-				move(10, 42);
+				move(11, 53);
 				addstr("         ");
 
 				init_mainScreen(&year, &year_and_month, &date, &today);
@@ -581,14 +581,13 @@ void search_schedule(int* year, int* year_and_month, int* date, int target) {
 //	- < print brief list to main page>
 int print_Brief_list(int year, int year_and_month)
 {
-	int i=0;
+	int i = 0;
 
 	if (head == NULL) {// if linked list is empty -> Print NO SCHEDULE
-		move(List_Yp_1, List_Xp);
-		addstr("\n        NO SCHEDULE        \n");
+		mvaddstr(List_Yp_2, List_Xp, "        NO SCHEDULE        \n");
 	}
 	else
-		for(i = 0; i < 3; i++)
+		for (i = 0; i < 3; i++)
 		{
 			if (current == head && i == 0) { //special case. we want to print head.
 				printBrief3(i + 1, strcmp(current->permissionBit, "10"), year, year_and_month);
@@ -626,7 +625,7 @@ nodeptr move_Brief_list(int how, int index)
 
 		if (isHead == head)
 			return isHead;
-		else 
+		else
 			for (int j = 0; j < index + 3; j++)
 				current = current->pre;
 
@@ -641,29 +640,17 @@ void clear_list_detail() {
 
 	xp = List_Xp;
 	yp = List_Yp_1;
-	move(yp, xp);
-	addstr("                                                                                    ");
-	move(yp + 1, xp);
-	addstr("                                                                                    ");
-	move(yp + 2, xp);
-	addstr("                                                                                    ");
-	xp = List_Xp;
+	mvaddstr(yp, xp, "                                                                                    ");
+	mvaddstr(yp + 1, xp, "                                                                                    ");
+	mvaddstr(yp + 2, xp, "                                                                                    ");
 	yp = List_Yp_2;
-	move(yp, xp);
-	addstr("                                                                                    ");
-	move(yp + 1, xp);
-	addstr("                                                                                    ");
-	move(yp + 2, xp);
-	addstr("                                                                                    ");
-	xp = List_Xp;
+	mvaddstr(yp, xp, "                                                                                    ");
+	mvaddstr(yp + 1, xp, "                                                                                    ");
+	mvaddstr(yp + 2, xp, "                                                                                    ");
 	yp = List_Yp_3;
-	move(yp, xp);
-	addstr("                                                                                    ");
-	move(yp + 1, xp);
-	addstr("                                                                                    ");
-	move(yp + 2, xp);
-	addstr("                                                                                    ");
-
+	mvaddstr(yp, xp, "                                                                                    ");
+	mvaddstr(yp + 1, xp, "                                                                                    ");
+	mvaddstr(yp + 2, xp, "                                                                                    ");
 }
 
 //	< print 3 brief list >
@@ -738,11 +725,10 @@ int return_today()
 	today = (today + (t->tm_mon + 1)) * 100;
 	today = (today + t->tm_mday);
 
-	move(1, 1);
-	addstr("*********************************************************\n");
-	addstr("                          Today                          \n");
-	printw("                         %d.%d.%d                        \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
-	addstr("*********************************************************\n");
+	mvaddstr(1, 10, "*********************************************************\n");
+	mvaddstr(2, 10, "                          Today                          \n");
+	mvprintw(3, 10, "                         %d.%d.%d                        \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
+	mvaddstr(4, 10, "*********************************************************\n");
 
 	return today;
 }
@@ -770,14 +756,15 @@ void smaller_than_ten(int target, char* targetstr)
 }
 
 void print_menu() {//print menu. Details of this function need to be modified.
-	move(5, 1);
-	addstr("*********************************************************\n");
-	addstr("1. Add Schedule.\n");
-	addstr("2. View Schedule Detail. \n   (Enter Schedule Number. Press Enter Key.)  :\n");
-	addstr("3. Search Schedule.\n   (Enter YYYYMMDD. Press Enter Key.)  :\n");
-	addstr("4. Call out\n");
-	addstr("5. Quit.\n");
-	addstr("*********************************************************\n");
+	mvaddstr(6, 10, "*********************************************************\n");
+	mvaddstr(7, 12, "1. Add Schedule.\n");
+	mvaddstr(8, 12, "2. View Schedule Detail. \n");
+	mvaddstr(9, 12, "  (Enter Schedule Number. Press Enter Key.)  :\n");
+	mvaddstr(10, 12, "3. Search Schedule.\n");
+	mvaddstr(11, 12, "  (Enter YYYYMMDD. Press Enter Key.)  :\n");
+	mvaddstr(12, 12, "4. Call out\n");
+	mvaddstr(13, 12, "5. Quit.\n");
+	mvaddstr(14, 10, "*********************************************************\n");
 	refresh();
 }
 
@@ -871,122 +858,224 @@ void addSchedule_MAIN()
 
 	//print upward screen.
 	clear();
-	move(0, 0);
-	addstr("             ADD SCHEDULE\n");
+	mvaddstr(1, 10, "*********************************************************\n");
+	mvaddstr(2, 10, "                       ADD SCHEDULE                      \n");
+	mvaddstr(3, 10, "*********************************************************\n");
+	mvaddstr(4, 10, "                  press ENTER : next step                \n");
+	mvaddstr(5, 10, "                  press ESC   : previous step            \n");
+	mvaddstr(6, 10, "*********************************************************\n");
 
-	move(1, 0);
-	addstr("*************************************************\n");
-	addstr("   Date       :\n"); //2,0
-	addstr("   Start time :\n"); //3,0
-	addstr("   End time   :\n"); //4,0
-	addstr("   Permission :\n"); //5,0
-	addstr("   Title      :\n"); //6,0
-	addstr("   Write      :\n"); //7,0
-	move(2, 15);
+	mvaddstr(7, 10, "           Date        :  ");
+	mvaddstr(8, 10, "          (YYYYMMDD) ");
+
+	mvaddstr(10, 10, "           Start time  :  ");
+	mvaddstr(11, 10, "          (HHMM) ");
+
+	mvaddstr(13, 10, "           End time    :  ");
+	mvaddstr(14, 10, "          (HHMM) ");
+	mvaddstr(15, 10, "*********************************************************\n");
+	mvaddstr(16, 10, "   Title      :");
+
+	mvaddstr(18, 10, "   Write      :");
+
+	move(7, 37);	//To move to where the date is written:
 	refresh();
 
 	// get user's input & save data to file
+
 	save_newSfile(get_newSinput());
 
 }
 
 //	< get user's input of new schedule >
+void clear_current_line(int x, int y) {
+	mvaddstr(x, y, "                                                                ");
+	refresh();
+}
+char* write_start(int x,int y, int size, int write_size) {
+	move(x, y);
+	addstr("                                                               ");
+	refresh();
+	move(x, y);
+	refresh();
+
+	char c;
+	char *wt;
+	wt = (char *)malloc(size * sizeof(char));
+	while (1) {
+		c = getchar();
+
+		if (c == ENTER) {
+			write_location++;
+			break;
+		}
+		else if (c == ESC) {
+
+			mvaddstr(x, y, "                                      ");
+			refresh();
+			write_location--;
+			break;
+		}
+		else if (c == DEL) {
+			/* delete char */
+			putchar(c);
+			write_size--;
+			wt[write_size] = '\0';
+		}
+		else {
+			putchar(c);
+			wt[write_size] = c;
+			wt[write_size + 1] = '\0';
+			write_size++;
+		}
+		refresh();
+	}
+	refresh();
+
+	//schedule_list_check_o_or_x.content = ISFULL;
+
+	//strcpy(schedule_info.content, content);
+	return wt;
+}
+
 Schedule get_newSinput()
 {
 	Schedule schedule_info;
-
+	write_location = 1;
 	echo();
 	//get user's input
-	//1. date
-	move(2, 15);
-	char date[10];
-	scanw("%s", date);
-	refresh();
-	schedule_info.date = atoi(date);
-	schedule_list_check_o_or_x.date = ISFULL;
+	while (1) {
+		if (write_location == 0) {
+			// Ask	: Are you sure you want to exit the write screen?
+			//	->yes	: go back main screen
+			//	->no	: go to the date bar
+			mvaddstr(LINES - 1, 10, "        >> do you want to exit write screen (y/n) ");
+			refresh();
+			char yes_or_no;
+			yes_or_no = getchar();
+			if (yes_or_no == 'y') {
+				// go back main screen
+				schedule_info.is_it_full = 0;	// if is 0 than do not save
+				break;
+			}
+			else if (yes_or_no == 'n') {
+				// cleared quistion
+				mvaddstr(LINES - 1, 10, "                                                      ");
+				refresh();
+				write_location = 1;
+			}
 
-	//2. start time
-	move(3, 15);
-	char start_time[5];
-	scanw("%s", start_time);
-	refresh();
-	schedule_info.start_time = atoi(start_time);
-	schedule_list_check_o_or_x.start_time = ISFULL;
+		}
+		else if (write_location == 1) {
+			//1. date
+			//move(7, 0);
+			//clear_current_line(7, 35);
+			mvaddstr(7, 10, "           Date        : ");
 
-	//3. end time
-	move(4, 15);
-	char end_time[5];
-	scanw("%s", end_time);
-	refresh();
-	schedule_info.end_time = atoi(end_time);
-	schedule_list_check_o_or_x.end_time = ISFULL;
+			move(7, 35);
+			refresh();
+			char *date;
+			int date_i = 0;
 
-	//4. permission bit
-	move(5, 15);
-	char permissionBit[3];
-	scanw("%s", permissionBit);
-	refresh();
-	strcpy(schedule_info.permissionBit, permissionBit);
-	schedule_list_check_o_or_x.permissionBit = ISFULL;
+			//date = write_start(date, 10, date_i);
+			date = write_start(7,35, 10, date_i);
 
-	//5. schedule name
-	move(6, 15);
-	addstr("");
-	refresh();
-	char scheduleName[100];
-	int scheduleName_i = 0;
+			schedule_info.date = atoi(date);
+			schedule_list_check_o_or_x.date = ISFULL;
 
-	char c;
+			move(10, 0); refresh();
+		}
+		else if (write_location == 2) {
+			//2. start time
+			move(10, 0);			refresh();
+			clear_current_line(10, 35);
+			//mvaddstr(10, 10, "           Start time  :  ");	
+			move(10, 35);
+			refresh();
+			char *start_time;
+			int start_time_i = 0;
 
-	while ((c = getchar()) != ENTER) {
-		schedule_list_check_o_or_x.scheduleName = ISFULL;
-		if (c == DEL) {
-			/* delete char */
-			putchar(c);
-			scheduleName_i--;
-			scheduleName[scheduleName_i] = '\0';
+			start_time = write_start(10,35, 5, start_time_i);
+			//start_time = write_start(start_time, 5, start_time_i);
+			schedule_info.start_time = atoi(start_time);
+			schedule_list_check_o_or_x.start_time = ISFULL;
+
+			move(13, 0); refresh();
+		}
+		else if (write_location == 3) {
+			//3. end time
+			clear_current_line(13, 35);
+			//mvaddstr(13, 10, "           End time    :  ");	
+			move(13, 35);
+			refresh();
+			char *end_time;
+			int end_time_i = 0;
+
+			end_time = write_start(13,35, 5, end_time_i);
+			//end_time = write_start(end_time, 5, end_time_i);
+
+			schedule_info.end_time = atoi(end_time);
+			schedule_list_check_o_or_x.end_time = ISFULL;
+
+			move(16, 0); refresh();
+		}
+		else if (write_location == 4) {
+			//5. schedule name
+			clear_current_line(16, 26);
+			//mvaddstr(16, 10, "   Title      :");
+			move(16, 26);
+			refresh();
+			char *scheduleName;
+			int scheduleName_i = 0;
+
+			scheduleName = write_start(16,26, 100, scheduleName_i);
+			//scheduleName = write_start(scheduleName, 100, scheduleName_i);
+			strcpy(schedule_info.scheduleName, scheduleName);
+
+			move(18, 0); refresh();
+
+		}
+		else if (write_location == 5) {
+			//6. content
+			clear_current_line(18, 26);
+			//mvaddstr(18, 10, "   Write      :");	
+			move(18, 26);
+			refresh();
+			char *content;
+			int content_i = 0;
+
+			content = write_start(18,26, 2000, content_i);
+			//content = write_start(content, 2000, content_i);
+			strcpy(schedule_info.content, content);
 		}
 		else {
-			putchar(c);
-			scheduleName[scheduleName_i] = c;
-			scheduleName[scheduleName_i + 1] = '\0';
+			// finished writing schedule and going to save
+			schedule_info.is_it_full = 1;	// if is 1 than save schedule
+			if (userData[thisUser_Index].isMaster) {
+				// if master -> the schedule is public
+				// go to save
+				strcpy(schedule_info.permissionBit, "00");
+			}
+			else {
+				// if not master -> ask if it's a public or private schedule
+				mvaddstr(LINES - 1, 10, "        >> Is this schedule public? (y/n)");
+				refresh();
+				char yes_or_no;
+				yes_or_no = getchar();
+				if (yes_or_no == 'y') {
+					// this schedule is public
+					strcpy(schedule_info.permissionBit, "10");
+				}
+				else if (yes_or_no == 'n') {
+					// this schedule is private.
+					strcpy(schedule_info.permissionBit, "11");
+				}
 
-			scheduleName_i++;
+			}
+			break;
 		}
-		refresh();
-		strcpy(schedule_info.scheduleName, scheduleName);
-
 	}
-	refresh();
 
-	//6. content
-	move(7, 15);
-	addstr("");
-	refresh();
-	char content[2000];
-	int content_i = 0;
-
-	move(8, 0);
-	addstr("=>");
-	refresh();
-
-	while ((c = getchar()) != ENTER) {
-		schedule_list_check_o_or_x.content = ISFULL;
-		if (c == DEL) {
-			/* delete char */
-			putchar(c);
-			content_i--;
-			content[content_i] = '\0';
-		}
-		else {
-			putchar(c);
-			content[content_i] = c;
-			content[content_i + 1] = '\0';
-			content_i++;
-		}
-		refresh();
-		strcpy(schedule_info.content, content);
-	}
 	refresh();
 	noecho();
 
@@ -1000,6 +1089,17 @@ void save_newSfile(Schedule schedule_info)
 {/* Get current time */
  //FILE* brief_file;
  //nodeptr newnode;
+
+	if (schedule_info.is_it_full == 0) {
+		// there is no schedule to add
+		// go to the main screen
+		return;
+	}
+	move(LINES - 1, 0);
+	addstr("                      =>>save schedule...\n");
+	refresh();
+	sleep(1);
+
 	struct tm* t = return_Time();
 	int year, mon, day, now;
 	int schedule_year, schedule_year_and_month, date;
@@ -1131,11 +1231,11 @@ void viewDetail_MAIN(int index, int year, int year_and_month)
 	nodeptr choiceptr = NULL;
 	int choice;
 
-	move(8, 50);
+	move(9, 60);
 	echo();
 	scanw("%d", &choice);
 	noecho();
-	move(8, 50);
+	move(9, 60);
 	addstr("    ");
 
 	if (index != 3) {
@@ -1473,4 +1573,3 @@ void server(void)//*************************************************************
 
 
 }
-

@@ -1,4 +1,3 @@
-
 //----------DEFINITIONS
 #define USER_MAX 100
 #define MCODE 486   //master code 
@@ -8,10 +7,10 @@
 #define ENTER 13   //[enter] = enter
 
 #define TIMEOFFSET 9
-#define List_Xp 10
-#define List_Yp_1 16
-#define List_Yp_2 22
-#define List_Yp_3 28
+#define List_Xp 25
+#define List_Yp_1 18
+#define List_Yp_2 24
+#define List_Yp_3 30
 
 #define ESC 0x1b
 #define DEL 0x7f
@@ -66,6 +65,7 @@ int user_isMaster;
 
 /* Detailed File Structure */
 typedef struct Schedule {
+	int is_it_full;
 	int date;
 	int start_time;
 	int end_time;
@@ -125,6 +125,10 @@ struct node* make_newNode(int date, int start, int end, char* ID, char* permissi
 struct node* make_schedulelist(int mode, char* filename, int* date);
 
 //	ADD NEW SCHEDULE
+int write_location=1;
+void clear_current_line(int x, int y);
+char* write_start(int x,int y, int size, int write_size);
+//char* write_start(char *write_thing, int size, int write_size);
 void addSchedule_MAIN();
 
 Schedule get_newSinput();
