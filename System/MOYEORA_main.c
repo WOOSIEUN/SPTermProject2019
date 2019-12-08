@@ -501,7 +501,7 @@ void mainScreen_MAIN()
 					move_Brief_list(1, index);
 					break;
 				}
-				else if (current->next == NULL) // if current->next is null, program should not print brief list again.
+				else if (current->next == NULL && head == NULL) // if current->next is null, program should not print brief list again.
 					continue;
 			}
 			else if (input == '1') { //---	Menu [1] : move to add schedule screen 
@@ -531,7 +531,7 @@ void mainScreen_MAIN()
 				break;
 			}
 			else if (input == '5') { //---	Menu [5] : quit program
-				  //NEED TO END SOCKET!! (CHILD P)
+									 //NEED TO END SOCKET!! (CHILD P)
 				endwin();
 				exit(1);
 				break;
@@ -640,9 +640,9 @@ void clear_list_detail() {
 
 	xp = List_Xp;
 	yp = List_Yp_1;
-	mvaddstr(yp,xp,"                                                                                    ");
-	mvaddstr(yp+1, xp, "                                                                                    ");
-	mvaddstr(yp+2, xp, "                                                                                    ");
+	mvaddstr(yp, xp, "                                                                                    ");
+	mvaddstr(yp + 1, xp, "                                                                                    ");
+	mvaddstr(yp + 2, xp, "                                                                                    ");
 	yp = List_Yp_2;
 	mvaddstr(yp, xp, "                                                                                    ");
 	mvaddstr(yp + 1, xp, "                                                                                    ");
@@ -725,7 +725,7 @@ int return_today()
 	today = (today + (t->tm_mon + 1)) * 100;
 	today = (today + t->tm_mday);
 
-	mvaddstr(1, 10,"*********************************************************\n");
+	mvaddstr(1, 10, "*********************************************************\n");
 	mvaddstr(2, 10, "                          Today                          \n");
 	mvprintw(3, 10, "                         %d.%d.%d                        \n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
 	mvaddstr(4, 10, "*********************************************************\n");
@@ -756,7 +756,7 @@ void smaller_than_ten(int target, char* targetstr)
 }
 
 void print_menu() {//print menu. Details of this function need to be modified.
-	mvaddstr(6, 10,"*********************************************************\n");
+	mvaddstr(6, 10, "*********************************************************\n");
 	mvaddstr(7, 12, "1. Add Schedule.\n");
 	mvaddstr(8, 12, "2. View Schedule Detail. \n");
 	mvaddstr(9, 12, "  (Enter Schedule Number. Press Enter Key.)  :\n");
