@@ -18,6 +18,8 @@
 #include <netdb.h>
 #include "MOYEORA_header.h"
 
+pid_t parend_pid;
+
 /*==================================================** MAIN **==============================================================
 > MULTI PROCESS
 PARENT : MAIN PROCESS FOR SCHEDULE PROGRAM
@@ -520,11 +522,11 @@ int dup_Check(char* label, char* buffer)
 
 
 /*=================================================== MAIN SCREEN ==========================================================
-MENU	 :		1. add	 / 2. view detail & delete	 / 3. seach		/ 4. callOut	/ 5. exit
------------
-SCHEDULE 1
+		   MENU	 :		1. add	 / 2. view detail & delete	 / 3. seach		/ 4. callOut	/ 5. exit
+		-----------
+		SCHEDULE 1
 prev	<<	SCHEDULE 2	>>	next
-SCHEDULE 3
+		SCHEDULE 3
 ============================================================================================================================*/
 //	<	main function for MAIN SCREEN	> 
 void mainScreen_MAIN()
@@ -532,6 +534,8 @@ void mainScreen_MAIN()
 	int year, year_and_month, date, today, index;
 	char input;
 	nodeptr isHead = NULL;
+
+	signal(SIGALRM, calloutPrint_handler);
 
 	//0. init screen	
 	today = return_today();
@@ -1447,7 +1451,7 @@ void callOut_MAIN(void)
 			return;
 
 		//check valid of User Name
-		if (pnum = checkValidName(to))
+		if ((pnum = checkValidName(to)) != -1)
 		{
 			mvaddstr(6, 0, "                                              ");//remove warning
 			break;
@@ -1472,7 +1476,6 @@ void callOut_MAIN(void)
 			struct sockaddr_in servadd;
 			struct hostent* hp;
 			int sock_id;
-			FILE * sock_fp;
 
 			//1. get a socket
 			sock_id = socket(AF_INET, SOCK_STREAM, 0);
@@ -1493,9 +1496,14 @@ void callOut_MAIN(void)
 			}
 
 			//send message 
+<<<<<<< HEAD
+			write(sock_id,userData[thisUser_Index].Name,sizeof(char)*20);
+
+=======
 			sock_fp = fdopen(sock_id, "w");
 
 			fprintf(sock_fp, "%s", userData[thisUser_Index].Name);
+>>>>>>> 654563b4368b043c236dcd49fcc1c2f6ac8b61f7
 			close(sock_id);
 
 			clear();
@@ -1520,7 +1528,7 @@ if name is not exist in User, return -1
 */
 int checkValidName(char* name)
 {
-	for (int i; i < userData_Size; i++)
+	for (int i =0 ; i < userData_Size; i++)
 	{
 		if (strcmp(userData[i].Name, name) == 0)
 			return userData[i].portNum;
@@ -1536,12 +1544,21 @@ server send sigusr1
 */
 void callout_handler(int signum)
 {
+<<<<<<< HEAD
+	//FILE* pipefp = fdopen(thepipe[READ_END],"r");
+	char buffer[20];
+
+	//read callout from pipe
+	read(thepipe[READ_END],buffer,sizeof(buffer));
+	strcpy(callout,buffer);
+=======
 	FILE* pipefp = fdopen(thepipe[READ_END], "r");
 	char buffer[20];
 
 	//read callout from pipe
 	fscanf(pipefp, "%s", buffer);
 	strcpy(callout, buffer);
+>>>>>>> 654563b4368b043c236dcd49fcc1c2f6ac8b61f7
 
 	set_ticker(2000);
 }
@@ -1569,24 +1586,39 @@ int set_ticker(int n_msecs)
 */
 void calloutPrint_handler(int signum)
 {
+<<<<<<< HEAD
+	static	int y,x;
+
+	//save cursor
+	if(printcounter == 1)
+		getyx(curscr,y,x);
+=======
 	int y, x;
 
 	//save cursor
 	getyx(curscr, y, x);
+>>>>>>> 654563b4368b043c236dcd49fcc1c2f6ac8b61f7
 
 	if (printcounter % 2 == 0)
 		standout();
 
 	mvprintw(LINES - 3, 5, "^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^");
+<<<<<<< HEAD
+	mvprintw(LINES - 2, 5, "|  !!  [ %5s ] IS CALLING YOU NOW   !!  |",callout);
+=======
 	mvprintw(LINES - 2, 5, "!!!   [%s] IS CALLING YOU NOW           !!!", callout);
+>>>>>>> 654563b4368b043c236dcd49fcc1c2f6ac8b61f7
 	mvprintw(LINES - 1, 5, "v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v");
 
 
 	if (printcounter % 2 == 0)
 		standend();
+<<<<<<< HEAD
+	
+=======
 	move(x, y);
+>>>>>>> 654563b4368b043c236dcd49fcc1c2f6ac8b61f7
 	refresh();
-
 
 	if (printcounter++ == 10)
 	{
@@ -1599,10 +1631,16 @@ void calloutPrint_handler(int signum)
 
 		alarm(0);	//turn off alarm
 		printcounter = 1;
+		//return cursor
+		move(x,y);
+	        refresh();
 	}
+<<<<<<< HEAD
+=======
 
 	move(x, y);
 	refresh();
+>>>>>>> 654563b4368b043c236dcd49fcc1c2f6ac8b61f7
 }
 
 /*	< server socket >
@@ -1611,19 +1649,26 @@ void calloutPrint_handler(int signum)
 */
 void server(void)
 {
+<<<<<<< HEAD
+ 
+=======
 
 	FILE * sock_fp, *pipe_fp;	//active socket & pipe file pointer
+>>>>>>> 654563b4368b043c236dcd49fcc1c2f6ac8b61f7
 	int serversock_id, sock_fd;	//server socket's fd , active sicket's fd
 	struct sockaddr_in server_add;
 	struct hostent* hp;
 	char buffer[20];	//buffer to receive message
 	int myport = userData[thisUser_Index].portNum;
 
+<<<<<<< HEAD
+=======
 	//0. open fp to parent process
 	pipe_fp = fdopen(thepipe[WRITE_END], "w");
 
+>>>>>>> 654563b4368b043c236dcd49fcc1c2f6ac8b61f7
 	//1. get a socket
-	serversock_id = socket(AF_INET, SOCK_STREAM, 0);
+	serversock_id = socket(PF_INET, SOCK_STREAM, 0);
 
 	//2. build address ( host, port )
 	bzero(&server_add, sizeof(server_add));	//init server address structure
@@ -1645,18 +1690,28 @@ void server(void)
 	{
 		//!connect
 		sock_fd = accept(serversock_id, NULL, NULL);
-		//sock_fp = fdopen(sock_fd,"r");
 
+<<<<<<< HEAD
+		//we should recieve message(read)		
+		read(sock_fd,buffer,sizeof(buffer));
+=======
 		//we should recieve message(read)
 		//fscanf(sock_fp,"%s",buffer);	//get message from client
 
 		read(sock_fd, buffer, sizeof(buffer));
+>>>>>>> 654563b4368b043c236dcd49fcc1c2f6ac8b61f7
+
+		close(sock_fd);
 
 		//signal to parent process to send message
 		kill(parent_pid, SIGUSR1);
 
+<<<<<<< HEAD
+		write(thepipe[WRITE_END],buffer,sizeof(buffer));
+=======
 		fprintf(pipe_fp, "%s", buffer);
 
+>>>>>>> 654563b4368b043c236dcd49fcc1c2f6ac8b61f7
 	}
 
 }
