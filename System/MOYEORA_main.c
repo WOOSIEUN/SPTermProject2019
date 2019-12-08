@@ -88,6 +88,7 @@ void get_userData()
 		i++;
 	}
 
+	portNumIndex = userData[i-1].portNum;
 	//save number of all users
 	userData_Size = i;
 
@@ -120,15 +121,19 @@ void startScreen_MAIN()
 
 		clear();
 
-		mvaddstr(2, 18, "+-+-+-+-+-+-+-+-+-+-+");
-		mvaddstr(3, 18, "  M o  y e o  R a    ");
-		mvaddstr(4, 18, "   S C H E D U L E R ");
-		mvaddstr(5, 18, " +-+-+-+-+-+-+-+-+-+-+");
+		mvaddstr(2, 20 , "+-+-+-+-+-+-+-+-+-+-+");
+		mvaddstr(3, 20, "  M o  y e o  R a    ");
+		mvaddstr(4, 20, "   S C H E D U L E R ");
+		mvaddstr(5, 20, " +-+-+-+-+-+-+-+-+-+-+");
 
 		mvaddstr(7, 23, "   ^    :   w   ");
 		mvaddstr(8, 23, " < v >  : a s d ");
-		mvaddstr(9, 23, " select : enter ");
 
+		mvaddstr(9, 23, " Select : enter ");
+
+
+		mvaddstr(12,10,"   PLEASE SELECT MENU FOR STARTING PROGRAM");
+		mvaddstr(13, 5,"= = = = = = = = = = = = = = = = = = = = = = = = = = = = = ");
 		if (start_choice)
 		{
 			mvaddstr(15, 23, "     LOG IN     ");   // choice (0)  default -> login 
@@ -143,7 +148,11 @@ void startScreen_MAIN()
 			standend();
 			mvaddstr(16, 23, "     SIGN IN    ");   // choice (1)
 		}
-
+		mvaddstr(19,20,"  - - - - - - - - -  ");
+		mvaddstr(20,20," |  MADE BY SISTERS |");
+		mvaddstr(21,20,"  - - - - - - - - -  ");
+		mvaddstr(22,20,"     2019. 12 . 08   ");		
+		move(LINES-1,COLS-1);
 		refresh();
 		pause();
 	}
@@ -183,26 +192,26 @@ int  log_In()
 
 	clear();
 
-	mvaddstr(0, 0, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-	mvaddstr(1, 0, "                   LOG IN                        ");
-	mvaddstr(2, 0, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-	mvaddstr(3, 0, "     input 'quit' : Return to Main Menu          ");
+	mvaddstr(2, 15, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+	mvaddstr(3, 15, "|                    LOG IN                     |");
+	mvaddstr(4, 15, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+	mvaddstr(5, 15, "      input 'quit' : Return to Main Menu         ");
 
 	signal(SIGIO, SIG_IGN);//-----set sigio ingnore!!
 
 						   //1. ID
 	while (1)
 	{
-		mvaddstr(4, 0, "              1. input your ID                   ");
-		mvaddstr(5, 0, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+		mvaddstr(7, 15, "              1. input your ID                   ");
+		mvaddstr(8, 15, "- - - - - - - - - - - - - - - - - - - - - - - - -");
 
-		mvaddstr(9, 0, "            ID :");
+		mvaddstr(13, 15, "            ID :   ");
 		refresh();
 		scanw("%s", ID_input);
 
 		if (strcmp(ID_input, QUIT_SIGN) == 0)//if user typed 'quit' -> return to main menu
 		{
-			mvaddstr(13, 0, "             RETURN TO START PAGE....");
+			mvaddstr(13, 15, "      <<  RETURN TO START PAGE.... >>         ");
 			refresh();
 			sleep(3);
 
@@ -210,26 +219,34 @@ int  log_In()
 		}
 		else if ((userIndex = find_LoginUser(ID_input)) < 0)//if id is not valid
 		{
-			mvaddstr(6, 0, "  !!   ID IS NOT VALID. TRY AGAIN   !!");
-			mvaddstr(9, 16, "                                    ");//remove input
+			mvaddstr(10,15, "                >> WARNING<<              ");
+			mvaddstr(11,15, "      !!   ID IS NOT VALID. TRY AGAIN   !!");
+			mvaddstr(13,34, "                                      ");//remove input
 		}
 		else
 			break;
+
 	}
+	//remove warinings
+	mvaddstr(10,15,"                                                    ");
+	mvaddstr(11,15,"                                                    ");
 
 	//2. PW
 	while (1)
 	{
-		mvaddstr(4, 0, "              2. input your PW                   ");
-		mvaddstr(5, 0, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+		mvaddstr(7, 15, "              2. input your PW                   ");
+		mvaddstr(8, 15, "- - - - - - - - - - - - - - - - - - - - - - - - -");
 
-		mvaddstr(11, 0, "            PW :");
+		mvaddstr(15, 15, "            PW :   ");
 		refresh();
+		
+		noecho();
 		scanw("%s", PW_input);
+		echo();
 
 		if (strcmp(PW_input, QUIT_SIGN) == 0)
 		{
-			mvaddstr(13, 0, "             RETURN TO START PAGE....");
+			mvaddstr(17, 15, "     <<  RETURN TO START PAGE.... >>        ");
 			refresh();
 			sleep(3);
 
@@ -237,23 +254,37 @@ int  log_In()
 		}
 		else if (strcmp(userData[userIndex].PW, PW_input) != 0)
 		{
-			mvaddstr(6, 0, "  !!   PW IS NOT VALID. TRY AGAIN   !!");
-			mvaddstr(11, 16, "                                    ");//remove input
+			mvaddstr(10,15, "                >> WARNING<<              ");
+			mvaddstr(11,15, "      !!   PW IS NOT VALID. TRY AGAIN   !!");
+			mvaddstr(15,34, "                                      ");//remove input
 
 		}
 		else
 			break;
 	}
-
-
+	
 	//3. save user index
 	thisUser_Index = userIndex;
-
-	//4. welcome sign ( login successed ) 
-	mvaddstr(13, 0, "             LOG IN SUCCESSED");
-	mvprintw(14, 0, "           WELCOME %s  . . .", userData[thisUser_Index].Name);
+	
+	//4. welcome sign ( login successed )
+	mvaddstr(10,15,"                                                    ");
+	mvaddstr(11,15,"          =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-            ");
+	mvaddstr(12,15,"                LOG IN SUCCESSED                    "); 
+	mvprintw(13,15,"              WELCOME AGAIN [  %s  ]                ", userData[thisUser_Index].Name);
+	mvaddstr(14,15,"                  .    .    .                       ");
+	mvaddstr(15,15,"           NOW TURN INTO MAIN SCREEN                ");
+	mvaddstr(16,15,"          =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-            ");
 	refresh();
-	sleep(5);
+	
+	//countdown for next screen
+	for(int i =3,j=26 ; i>0 ; i--,j +=7)
+	{
+		mvprintw(18,j,"%3d..",i);
+		refresh();
+
+		sleep(1);
+	}
+
 	return 1;
 
 }
@@ -282,85 +313,88 @@ int sign_In(void)
 	char buffer[100];   //buffer to get user input
 
 	user newUser;
-	int index = 12; //input start position
+	int index = 15; //input start position
 
 	signal(SIGIO, SIG_IGN);//-----set sigio ingnore!!
 
 	clear();
 	//default page
-	mvaddstr(0, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
-	mvaddstr(1, 0, "|                  Sign In                    |");
-	mvaddstr(2, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
-	mvaddstr(3, 0, "|  if you want to return to Main page,        |");
-	mvaddstr(4, 0, "|                    please input 'quit'      |");
-	mvaddstr(5, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
+	mvaddstr(2, 15, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+	mvaddstr(3, 15, "|                    Sign In                    |");
+	mvaddstr(4, 15, "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
+	mvaddstr(5, 15, "|      if you want to return to Main page,      |");
+	mvaddstr(6, 15, "|              please input 'quit'              |");
+	mvaddstr(7, 15, "- - - - - - - - - - - - - - - - - - - - - - - - -");
 
 	//1. ID
-	mvaddstr(6, 0, "|             1. Input your ID                |");
-	mvaddstr(7, 0, "|  [  engligh + num ,   5  < length < 10   ]  |");
-	mvaddstr(8, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
+	mvaddstr(9, 15, "               1. Input your ID                  ");
+	mvaddstr(10,15, "    [  engligh + num ,   5  < length < 10   ]    ");
 
-	mvaddstr(index, 0, "           ID :");
+	mvaddstr(index, 15, "           ID :   ");
 	if (signIn_Check(5, 10, index, buffer, "ID") == 0)
 		return 0;
 	strcpy(newUser.ID, buffer);
 	index += 2;
 	//remove warning
-	mvprintw(9, 0, "                                                        ");
+	mvprintw(12, 15, "                                                        ");
+	mvprintw(13, 15, "                                                        ");
 
 	//2. PW
-	mvaddstr(6, 0, "|             2. Input your PW                |");
-	mvaddstr(7, 0, "|  [  engligh + num ,   5  < length < 10   ]  |");
-	mvaddstr(8, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
+	mvaddstr(9, 15, "               2. Input your PW                 ");
 
-	mvaddstr(index, 0, "           PW :");
+	mvaddstr(index, 15, "           PW :   ");
 	if (signIn_Check(5, 10, index, buffer, "PW") == 0)
 		return 0;
 	strcpy(newUser.PW, buffer);
 	index += 2;
 	//remove warning
-	mvprintw(9, 0, "                                                        ");
-
+	mvprintw(12, 15, "                                                                   ");
+	mvprintw(12, 15, "                                                                   ");
 
 	//3. NAME
-	mvaddstr(6, 0, "|           3. Input your Name                |");
-	mvaddstr(7, 0, "|      [  engligh  ,   1< length < 10   ]     |");
-	mvaddstr(8, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
+	mvaddstr(9 ,15, "               3. Input your Name                 ");
+	mvaddstr(10,15, "       [  engligh   ,   1 <  length < 10   ]      ");
 
-	mvaddstr(index, 0, "         NAME :");
-	if (signIn_Check(1, 10, index, buffer, "NAME") == 0)
+	mvaddstr(index, 15, "         NAME :");
+	if (signIn_Check(1, 10, index, buffer, "Name") == 0)
 		return 0;
 	strcpy(newUser.Name, buffer);
 	index += 2;
 	//remove warning
-	mvprintw(9, 0, "                                                        ");
+	mvprintw(12, 15, "                                                                    ");
+	mvprintw(13, 15, "                                                                    ");
 
-	mvprintw(7, 0, "                                                        ");
 	//4. isMaster
-	mvaddstr(6, 0, "|           4. Are you MASTER?                |");
-	mvaddstr(7, 0, "|                  [ y/n ]                    |");
-	mvaddstr(8, 0, "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");
-	mvaddstr(index, 0, "      MASTER? :");
+	mvaddstr(9 ,15, "               4. Are you MASTER?                ");
+	mvaddstr(10,15, "                      [ y/n ]                    ");
+	mvaddstr(index, 15, "      MASTER? :   ");
 	refresh();
 
 	while (1)
 	{
 		char c;
-		mvscanw(index, 15, "%c", &c);
+		mvscanw(index, 33, "%c", &c);
 
 		if (c == 'y')//Master -> get Master Code
 		{
 			int mcode;
 
-			mvaddstr(index + 1, 0, "   MASTER CODE:");
+			mvaddstr(index + 2, 15, "            -=-=-=-=-=-=-=-=-=-=-=-   ");
+			mvaddstr(index + 3, 15, "           |    ? MASTER CODE ?    |  ");
+			mvaddstr(index + 4, 15, "           |      :                |  ");
+			mvaddstr(index + 5, 15, "            -=-=-=-=-=-=-=-=-=-=-=-   ");
+			move(index+4,36);
 			refresh();
-			mvscanw(index + 1, 15, "%d", &mcode);
+			scanw( "%d", &mcode);
 
 			if (mcode != MCODE)//if user input wrong code -> return to main page
 			{
-				mvaddstr(index + 3, 0, "      !!       YOUR MCODE IS WRONG. RETURN TO MAIN PAGE . . .");
+				mvaddstr(index+2,15,"                          >> WARNING <<                                      ");
+				mvaddstr(index+3,15,"                  !!    YOUR MCODE IS WRONG     !!                           ");
+				mvaddstr(index+4,15,"                      ..RETURN TO MAIN PAGE..                                ");
+				mvaddstr(index+5,15,"                                                                             ");
 				refresh();
-				sleep(5);
+				sleep(3);
 
 				return 0;
 			}
@@ -374,19 +408,48 @@ int sign_In(void)
 			break;
 		}
 
-		mvprintw(9, 0, "   !!    YOUR ANSWER SHOULD BE 'y' OR 'n' !!  TRY AGAIN  ");
+		mvprintw(12, 15, "                   >> WARNING <<                       ");
+		mvprintw(13, 15, "  !!  YOUR ANSWER SHOULD BE 'y' OR 'n' !!  TRY AGAIN   ");
 
 	}
 
+	newUser.portNum = ++portNumIndex;
 	userData[++userData_Size] = newUser;
-	sprintf(fullStatus, "%s %s %s %d", userData[userData_Size].ID, userData[userData_Size].PW, userData[userData_Size].Name, userData[userData_Size].isMaster);
+	sprintf(fullStatus, "%s %s %s %d %d", userData[userData_Size].ID, userData[userData_Size].PW, userData[userData_Size].Name, userData[userData_Size].isMaster, userData[userData_Size].portNum);
 	fprintf(userData_file, "%s\n", fullStatus);
+	
 
-	mvprintw(22, 0, "                 YOUR SIGN IN IS DONE. TRY LOGIN ");
-	mvprintw(23, 0, "                             -> LETS GO TO LOGIN PAGE. . . . .");
+	mvaddstr( 8,15,"                                                    ");
+	mvaddstr( 9,15,"                                                    ");
+	mvaddstr(10,15,"                                                    ");
+	mvaddstr(11,15,"                                                    ");
+	mvaddstr(12,15,"                                                    ");
+        mvaddstr(13,15,"          =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-            ");
+        mvaddstr(14,15,"                SIGN IN SUCCESSED                   ");
+        mvprintw(15,15,"                WELCOME  [  %s  ]                   ", newUser.Name);
+        mvaddstr(16,15,"                  .    .    .                       ");
+        mvaddstr(17,15,"           NOW TURN INTO LOG IN SCREEN              ");
+        mvaddstr(18,15,"          =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-            ");
+	mvaddstr(19,15,"                                                    ");
+	mvaddstr(20,15,"                                                    ");
+	mvaddstr(21,15,"                                                    ");
+	mvaddstr(22,15,"                                                    ");
+	mvaddstr(23,15,"                                                    ");
+	mvaddstr(24,15,"                                                    ");
+	mvaddstr(25,15,"                                                    ");
+	mvaddstr(26,15,"                                                    ");
+
 	refresh();
 
-	sleep(5);
+	 //countdown for next screen
+        for(int i =3,j=26 ; i>0 ; i--,j +=7)
+        {
+               mvprintw(20,j,"%3d..",i);
+               refresh();
+
+               sleep(1);
+        }
+
 
 	fclose(userData_file);
 
@@ -404,22 +467,23 @@ int signIn_Check(int minLen, int maxLen, int index, char* buffer, char* label)
 	{
 		refresh();
 
-		mvscanw(index, 15, "%s", buffer);
+		mvscanw(index, 33, "%s", buffer);
 
 		if (strcmp(QUIT_SIGN, buffer) == 0)//1. quit check  
 			return 0;//->quit
 		else if (strlen(buffer) < minLen || strlen(buffer) > maxLen)//2. length check
 		{
-			mvprintw(9, 0, "   !!   YOUR %s SHOULD BE IN %d~%d LENGTH !!  TRY AGAIN  ", label, minLen, maxLen);
+			mvprintw(12, 15, "                   >> WARNING <<                     ");
+			mvprintw(13, 15, " !! YOUR %s SHOULD BE IN %d~%d LENGTH !!  TRY AGAIN  ", label, minLen, maxLen);
 			//remove input
-			mvprintw(index, 15, "                                                      ");
+			mvprintw(index, 33, "                                                      ");
 		}
-		else if (dup_Check(label, buffer))//3. duplication check
+		else if (dup_Check(label, buffer) && strcmp("PW",label))//3. duplication check
 		{
-
-			mvprintw(9, 0, "   !!  THIS %s IS ALREADY EXIST !!  TRY AGAIN  ", label, minLen, maxLen);
+			mvprintw(12, 15, "                   >> WARNING <<                     ");
+			mvprintw(13, 15, "      !! THIS %s IS ALREADY EXIST !!  TRY AGAIN  ", label, minLen, maxLen);
 			//remove input
-			mvprintw(index, 15, "                                                      ");
+			mvprintw(index, 33, "                                                      ");
 		}
 		else
 			return 1;
@@ -858,122 +922,224 @@ void addSchedule_MAIN()
 
 	//print upward screen.
 	clear();
-	move(0, 0);
-	addstr("             ADD SCHEDULE\n");
+	mvaddstr(1, 10, "*********************************************************\n");
+	mvaddstr(2, 10, "                       ADD SCHEDULE                      \n");
+	mvaddstr(3, 10, "*********************************************************\n");
+	mvaddstr(4, 10, "                  press ENTER : next step                \n");
+	mvaddstr(5, 10, "                  press ESC   : previous step            \n");
+	mvaddstr(6, 10, "*********************************************************\n");
 
-	move(1, 0);
-	addstr("*************************************************\n");
-	addstr("   Date       :\n"); //2,0
-	addstr("   Start time :\n"); //3,0
-	addstr("   End time   :\n"); //4,0
-	addstr("   Permission :\n"); //5,0
-	addstr("   Title      :\n"); //6,0
-	addstr("   Write      :\n"); //7,0
-	move(2, 15);
+	mvaddstr(7, 10, "           Date        :  ");
+	mvaddstr(8, 10, "          (YYYYMMDD) ");
+
+	mvaddstr(10, 10, "           Start time  :  ");
+	mvaddstr(11, 10, "          (HHMM) ");
+
+	mvaddstr(13, 10, "           End time    :  ");
+	mvaddstr(14, 10, "          (HHMM) ");
+	mvaddstr(15, 10, "*********************************************************\n");
+	mvaddstr(16, 10, "   Title      :");
+
+	mvaddstr(18, 10, "   Write      :");
+
+	move(7, 37);	//To move to where the date is written:
 	refresh();
 
 	// get user's input & save data to file
+
 	save_newSfile(get_newSinput());
 
 }
 
 //	< get user's input of new schedule >
+void clear_current_line(int x, int y) {
+	mvaddstr(x, y, "                                                                ");
+	refresh();
+}
+char* write_start(int x,int y, int size, int write_size) {
+	move(x, y);
+	addstr("                                                               ");
+	refresh();
+	move(x, y);
+	refresh();
+
+	char c;
+	char *wt;
+	wt = (char *)malloc(size * sizeof(char));
+	while (1) {
+		c = getchar();
+
+		if (c == ENTER) {
+			write_location++;
+			break;
+		}
+		else if (c == ESC) {
+
+			mvaddstr(x, y, "                                      ");
+			refresh();
+			write_location--;
+			break;
+		}
+		else if (c == DEL) {
+			/* delete char */
+			putchar(c);
+			write_size--;
+			wt[write_size] = '\0';
+		}
+		else {
+			putchar(c);
+			wt[write_size] = c;
+			wt[write_size + 1] = '\0';
+			write_size++;
+		}
+		refresh();
+	}
+	refresh();
+
+	//schedule_list_check_o_or_x.content = ISFULL;
+
+	//strcpy(schedule_info.content, content);
+	return wt;
+}
+
 Schedule get_newSinput()
 {
 	Schedule schedule_info;
-
+	write_location = 1;
 	echo();
 	//get user's input
-	//1. date
-	move(2, 15);
-	char date[10];
-	scanw("%s", date);
-	refresh();
-	schedule_info.date = atoi(date);
-	schedule_list_check_o_or_x.date = ISFULL;
+	while (1) {
+		if (write_location == 0) {
+			// Ask	: Are you sure you want to exit the write screen?
+			//	->yes	: go back main screen
+			//	->no	: go to the date bar
+			mvaddstr(LINES - 1, 10, "        >> do you want to exit write screen (y/n) ");
+			refresh();
+			char yes_or_no;
+			yes_or_no = getchar();
+			if (yes_or_no == 'y') {
+				// go back main screen
+				schedule_info.is_it_full = 0;	// if is 0 than do not save
+				break;
+			}
+			else if (yes_or_no == 'n') {
+				// cleared quistion
+				mvaddstr(LINES - 1, 10, "                                                      ");
+				refresh();
+				write_location = 1;
+			}
 
-	//2. start time
-	move(3, 15);
-	char start_time[5];
-	scanw("%s", start_time);
-	refresh();
-	schedule_info.start_time = atoi(start_time);
-	schedule_list_check_o_or_x.start_time = ISFULL;
+		}
+		else if (write_location == 1) {
+			//1. date
+			//move(7, 0);
+			//clear_current_line(7, 35);
+			mvaddstr(7, 10, "           Date        : ");
 
-	//3. end time
-	move(4, 15);
-	char end_time[5];
-	scanw("%s", end_time);
-	refresh();
-	schedule_info.end_time = atoi(end_time);
-	schedule_list_check_o_or_x.end_time = ISFULL;
+			move(7, 35);
+			refresh();
+			char *date;
+			int date_i = 0;
 
-	//4. permission bit
-	move(5, 15);
-	char permissionBit[3];
-	scanw("%s", permissionBit);
-	refresh();
-	strcpy(schedule_info.permissionBit, permissionBit);
-	schedule_list_check_o_or_x.permissionBit = ISFULL;
+			//date = write_start(date, 10, date_i);
+			date = write_start(7,35, 10, date_i);
 
-	//5. schedule name
-	move(6, 15);
-	addstr("");
-	refresh();
-	char scheduleName[100];
-	int scheduleName_i = 0;
+			schedule_info.date = atoi(date);
+			schedule_list_check_o_or_x.date = ISFULL;
 
-	char c;
+			move(10, 0); refresh();
+		}
+		else if (write_location == 2) {
+			//2. start time
+			move(10, 0);			refresh();
+			clear_current_line(10, 35);
+			//mvaddstr(10, 10, "           Start time  :  ");	
+			move(10, 35);
+			refresh();
+			char *start_time;
+			int start_time_i = 0;
 
-	while ((c = getchar()) != ENTER) {
-		schedule_list_check_o_or_x.scheduleName = ISFULL;
-		if (c == DEL) {
-			/* delete char */
-			putchar(c);
-			scheduleName_i--;
-			scheduleName[scheduleName_i] = '\0';
+			start_time = write_start(10,35, 5, start_time_i);
+			//start_time = write_start(start_time, 5, start_time_i);
+			schedule_info.start_time = atoi(start_time);
+			schedule_list_check_o_or_x.start_time = ISFULL;
+
+			move(13, 0); refresh();
+		}
+		else if (write_location == 3) {
+			//3. end time
+			clear_current_line(13, 35);
+			//mvaddstr(13, 10, "           End time    :  ");	
+			move(13, 35);
+			refresh();
+			char *end_time;
+			int end_time_i = 0;
+
+			end_time = write_start(13,35, 5, end_time_i);
+			//end_time = write_start(end_time, 5, end_time_i);
+
+			schedule_info.end_time = atoi(end_time);
+			schedule_list_check_o_or_x.end_time = ISFULL;
+
+			move(16, 0); refresh();
+		}
+		else if (write_location == 4) {
+			//5. schedule name
+			clear_current_line(16, 26);
+			//mvaddstr(16, 10, "   Title      :");
+			move(16, 26);
+			refresh();
+			char *scheduleName;
+			int scheduleName_i = 0;
+
+			scheduleName = write_start(16,26, 100, scheduleName_i);
+			//scheduleName = write_start(scheduleName, 100, scheduleName_i);
+			strcpy(schedule_info.scheduleName, scheduleName);
+
+			move(18, 0); refresh();
+
+		}
+		else if (write_location == 5) {
+			//6. content
+			clear_current_line(18, 26);
+			//mvaddstr(18, 10, "   Write      :");	
+			move(18, 26);
+			refresh();
+			char *content;
+			int content_i = 0;
+
+			content = write_start(18,26, 2000, content_i);
+			//content = write_start(content, 2000, content_i);
+			strcpy(schedule_info.content, content);
 		}
 		else {
-			putchar(c);
-			scheduleName[scheduleName_i] = c;
-			scheduleName[scheduleName_i + 1] = '\0';
+			// finished writing schedule and going to save
+			schedule_info.is_it_full = 1;	// if is 1 than save schedule
+			if (userData[thisUser_Index].isMaster) {
+				// if master -> the schedule is public
+				// go to save
+				strcpy(schedule_info.permissionBit, "00");
+			}
+			else {
+				// if not master -> ask if it's a public or private schedule
+				mvaddstr(LINES - 1, 10, "        >> Is this schedule public? (y/n)");
+				refresh();
+				char yes_or_no;
+				yes_or_no = getchar();
+				if (yes_or_no == 'y') {
+					// this schedule is public
+					strcpy(schedule_info.permissionBit, "10");
+				}
+				else if (yes_or_no == 'n') {
+					// this schedule is private.
+					strcpy(schedule_info.permissionBit, "11");
+				}
 
-			scheduleName_i++;
+			}
+			break;
 		}
-		refresh();
-		strcpy(schedule_info.scheduleName, scheduleName);
-
 	}
-	refresh();
 
-	//6. content
-	move(7, 15);
-	addstr("");
-	refresh();
-	char content[2000];
-	int content_i = 0;
-
-	move(8, 0);
-	addstr("=>");
-	refresh();
-
-	while ((c = getchar()) != ENTER) {
-		schedule_list_check_o_or_x.content = ISFULL;
-		if (c == DEL) {
-			/* delete char */
-			putchar(c);
-			content_i--;
-			content[content_i] = '\0';
-		}
-		else {
-			putchar(c);
-			content[content_i] = c;
-			content[content_i + 1] = '\0';
-			content_i++;
-		}
-		refresh();
-		strcpy(schedule_info.content, content);
-	}
 	refresh();
 	noecho();
 
@@ -987,6 +1153,17 @@ void save_newSfile(Schedule schedule_info)
 {/* Get current time */
  //FILE* brief_file;
  //nodeptr newnode;
+
+	if (schedule_info.is_it_full == 0) {
+		// there is no schedule to add
+		// go to the main screen
+		return;
+	}
+	move(LINES - 1, 0);
+	addstr("                      =>>save schedule...\n");
+	refresh();
+	sleep(1);
+
 	struct tm* t = return_Time();
 	int year, mon, day, now;
 	int schedule_year, schedule_year_and_month, date;
@@ -1237,8 +1414,10 @@ void del_file(char* filepath)
 
 
 /*============================================== M [4] CALL OUT OTHER USER ==================================================
-1. SEE DATAIL OF FILE
-2. DELETE SCHEDULE FILE
+	SEND MY NAME TO OTHER USER'S SERVER 
+	-> SERVER SEND SIGUSR1 & NAME TO PARENT PROCESS 
+	-> SAVE NAME & SET ALRM TO PRINT STANDOUT
+	-> SIGALRM HANDLER PRINT CALLOUT
 ============================================================================================================================*/
 /*	<CALLOUT other user>
 make active socket
@@ -1248,23 +1427,20 @@ void callOut_MAIN(void)
 {
 	int pnum;		//portnum of receiver
 	char to[20];		//Name of message receiver
-	char m_context[100];	//context of message
-	time_t msendTime;	//sending time of message
-	char fullmessage[150];
 	char answer;		//answer of (y/n) question
 
 	signal(SIGIO, SIG_IGN);	//ignore sigio
 
 	clear();
-	mvaddstr(0, 0, "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.");
-	mvaddstr(1, 0, "      LETS CALL OUT FELLOW  |  input 'quit' if you want to quit         ");
-	mvaddstr(2, 0, "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.");
-	mvaddstr(3, 0, "              please  input name of fellow to call out                  ");
+	mvaddstr(0, 10, "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.");
+	mvaddstr(1, 10, "      LETS CALL OUT FELLOW  |  input 'quit' if you want to quit         ");
+	mvaddstr(2, 10, "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.");
+	mvaddstr(3, 10, "              please  input name of fellow to call out                  ");
 
 	//1. get receiver's Name
 	while (1)
 	{
-		mvaddstr(8, 0, "      To : ");	refresh();	scanw("%s", to);
+		mvaddstr(8, 10, "                To :   ");	refresh();	scanw("%s", to);
 
 		//check quit sign
 		if (strcmp("quit", to) == 0)
@@ -1285,8 +1461,8 @@ void callOut_MAIN(void)
 	//2. get final answer 
 	while (1)
 	{
-		mvprintw(11, 0, "         WILL YOU SEND MESSAGE TO ' %s ' ? (y/n)     ", to);
-		mvaddstr(12, 0, "                                 : "); refresh();
+		mvprintw(11, 0, "               WILL YOU SEND CALLOUT TO  ' %s ' ? (y/n)     ", to);
+		mvaddstr(12, 0, "                              : "); refresh();
 		scanw("%c", &answer);
 
 		if (answer == 'n')
@@ -1296,6 +1472,7 @@ void callOut_MAIN(void)
 			struct sockaddr_in servadd;
 			struct hostent* hp;
 			int sock_id;
+			FILE * sock_fp;
 
 			//1. get a socket
 			sock_id = socket(AF_INET, SOCK_STREAM, 0);
@@ -1309,30 +1486,30 @@ void callOut_MAIN(void)
 			if (connect(sock_id, (struct sockaddr*) & servadd, sizeof(servadd)) != 0)
 			{
 				clear();
-				mvprintw(15, 0, "%s is OFFLINE NOW. TRY NEXT TIME", to);
+				mvprintw(15, 15, "%s is OFFLINE NOW. TRY NEXT TIME", to);
 				refresh();
 				sleep(3);
 				return;
 			}
 
 			//send message 
-			//sprintf(
+			sock_fp = fdopen(sock_id,"w");
 
-			write(sock_id, userData[thisUser_Index].Name, sizeof(userData[thisUser_Index].Name));
+			fprintf(sock_fp,"%s",userData[thisUser_Index].Name);
 			close(sock_id);
 
 			clear();
-			mvaddstr(14, 0, "+-+-+-+-+-+-+                                                                 ");
-			mvprintw(15, 0, "    YOUR CALLOUT TO %s IS SUCCESSFULLY SENDED. RETURN TO MAIN PAGE....      ", to);
-			mvaddstr(16, 0, "+                                                                +-+-+-+-+-+-+");
+			mvaddstr(14, 5, "+-+-+-+-+-+-+                                                                 ");
+			mvprintw(15, 5, "    YOUR CALLOUT TO %s IS SUCCESSFULLY SENDED. RETURN TO MAIN PAGE....      ", to);
+			mvaddstr(16, 5, "+                                                                +-+-+-+-+-+-+");
 			refresh();
 			sleep(3);
 			break;
 		}
 		else
 		{
-			mvaddstr(9, 0, "    !!   YOU SHOULD ANSWER  y or n. TRY AGAIN   !!");
-			mvaddstr(11, 0, "                                                            ");//remove answer
+			mvaddstr(9, 10, "    !!   YOU SHOULD ANSWER  y or n. TRY AGAIN   !!");
+			mvaddstr(11,10, "                                                            ");//remove answer
 		}
 	}
 
@@ -1359,8 +1536,12 @@ server send sigusr1
 */
 void callout_handler(int signum)
 {
+	FILE* pipefp = fdopen(thepipe[READ_END],"r");
+	char buffer[20];
+
 	//read callout from pipe
-	read(thepipe[READ_END], callout, sizeof(callout));
+	fscanf(pipefp,"%s",buffer);
+	strcpy(callout,buffer);
 
 	set_ticker(2000);
 }
@@ -1388,17 +1569,24 @@ int set_ticker(int n_msecs)
 */
 void calloutPrint_handler(int signum)
 {
+	int y,x;
+
+	//save cursor
+	getyx(curscr,y,x);
+
 	if (printcounter % 2 == 0)
 		standout();
 
 	mvprintw(LINES - 3, 5, "^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^.^");
-	mvprintw(LINES - 2, 5, "!!!     [%5s] IS CALLING YOU NOW      !!!", callout);
+	mvprintw(LINES - 2, 5, "!!!   [%s] IS CALLING YOU NOW           !!!",callout);
 	mvprintw(LINES - 1, 5, "v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v.v");
 
 
 	if (printcounter % 2 == 0)
 		standend();
+	move(x,y);
 	refresh();
+
 
 	if (printcounter++ == 10)
 	{
@@ -1412,19 +1600,27 @@ void calloutPrint_handler(int signum)
 		alarm(0);	//turn off alarm
 		printcounter = 1;
 	}
+
+	move(x,y);
+	refresh();
 }
 
 /*	< server socket >
-recieve message from other client
-and save message data in file
+-recieve message from other client
+-message data in file
 */
-void server(void)//********************************************************************
+void server(void)
 {
+ 
+	FILE * sock_fp,*pipe_fp;	//active socket & pipe file pointer
 	int serversock_id, sock_fd;	//server socket's fd , active sicket's fd
 	struct sockaddr_in server_add;
 	struct hostent* hp;
-	char call_from[20];	//buffer to receive message
+	char buffer[20];	//buffer to receive message
 	int myport = userData[thisUser_Index].portNum;
+
+	//0. open fp to parent process
+	pipe_fp = fdopen(thepipe[WRITE_END],"w");
 
 	//1. get a socket
 	serversock_id = socket(AF_INET, SOCK_STREAM, 0);
@@ -1433,7 +1629,8 @@ void server(void)//*************************************************************
 	bzero(&server_add, sizeof(server_add));	//init server address structure
 	hp = gethostbyname(HOSTNAME);			//get host ip
 
-											//3. fill in socket address structure & bind
+		
+	//3. fill in socket address structure & bind
 	bcopy((void*)hp->h_addr, (void*)&server_add.sin_addr, hp->h_length);
 	server_add.sin_port = htons(myport);
 	server_add.sin_family = AF_INET;
@@ -1448,16 +1645,18 @@ void server(void)//*************************************************************
 	{
 		//!connect
 		sock_fd = accept(serversock_id, NULL, NULL);
+		//sock_fp = fdopen(sock_fd,"r");
 
 		//we should recieve message(read)
-		read(sock_fd, call_from, sizeof(call_from));	//get message from client
+		//fscanf(sock_fp,"%s",buffer);	//get message from client
+		
+		read(sock_fd,buffer,sizeof(buffer));
 
-														//signal to parent process to send message
+		//signal to parent process to send message
 		kill(parent_pid, SIGUSR1);
-		write(thepipe[WRITE_END], call_from, sizeof(call_from));
+
+		fprintf(pipe_fp,"%s",buffer);
 
 	}
 
-
 }
-
