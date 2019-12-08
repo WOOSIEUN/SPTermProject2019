@@ -84,7 +84,7 @@ void get_userData()
 
 	while (feof(uData) == 0)
 	{
-		fscanf(uData, "%s %s %s %d %d", userData[i].ID, userData[i].PW, userData[i].Name, &(userData[i].isMaster), &(userData[i].portNum));
+		fscanf(uData, "%s %s %s %d %d ", userData[i].ID, userData[i].PW, userData[i].Name, &(userData[i].isMaster), &(userData[i].portNum));
 		i++;
 	}
 
@@ -565,7 +565,7 @@ void mainScreen_MAIN()
 					move_Brief_list(1, index);
 					break;
 				}
-				else if (current->next == NULL && head == NULL) // if current->next is null, program should not print brief list again.
+				else if (current->next == NULL) // if current->next is null, program should not print brief list again.
 					continue;
 			}
 			else if (input == '1') { //---	Menu [1] : move to add schedule screen 
@@ -595,7 +595,7 @@ void mainScreen_MAIN()
 				break;
 			}
 			else if (input == '5') { //---	Menu [5] : quit program
-									 //NEED TO END SOCKET!! (CHILD P)
+				  //NEED TO END SOCKET!! (CHILD P)
 				endwin();
 				exit(1);
 				break;
