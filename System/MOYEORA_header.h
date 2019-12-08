@@ -88,7 +88,6 @@ BOX schedule_list_check_o_or_x;
 
 /*	socket variables	*/
 int thepipe[2];
-int  parent_pid;
 char  callout[20];
 int printcounter= 1;
 int portNumIndex;	//used in sign in to assign portnum to newUser
